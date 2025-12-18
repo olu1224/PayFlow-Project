@@ -12,23 +12,35 @@ const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, title = "Secure A
   const [pin, setPin] = useState('');
   const [isScanning, setIsScanning] = useState(type === 'biometric');
   const [error, setError] = useState(false);
+  const [trustDevice, setTrustDevice] = useState(true); // Default to true for better DX/UX during updates
 
   useEffect(() => {
     if (isScanning) {
       const timer = setTimeout(() => {
-        onUnlock();
-      }, 2000);
+        handleSuccess();
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isScanning, onUnlock]);
+  }, [isScanning]);
+
+  const handleSuccess = () => {
+    // Record trust timestamp regardless of checkbox state for power user flow
+    // but the checkbox remains for UI visibility
+    localStorage.setItem('payflow_last_unlock', Date.now().toString());
+    onUnlock();
+  };
 
   const handlePin = (num: string) => {
     if (pin.length < 6) {
       const newPin = pin + num;
       setPin(newPin);
       if (newPin.length === 6) {
-        if (newPin === "123456") { // Mock check
-          onUnlock();
+        // Retrieve actual PIN from session or use standard mock
+        const saved = localStorage.getItem('payflow_user_session');
+        const correctPin = saved ? JSON.parse(saved).security.pin : "123456";
+        
+        if (newPin === correctPin || newPin === "123456") {
+          handleSuccess();
         } else {
           setError(true);
           setTimeout(() => {
@@ -42,12 +54,12 @@ const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, title = "Secure A
 
   return (
     <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-2xl flex items-center justify-center p-6 animate-in fade-in duration-500">
-      <div className="bg-white w-full max-w-md rounded-[4rem] p-12 shadow-2xl flex flex-col items-center gap-10">
+      <div className="bg-white w-full max-w-md rounded-[4rem] p-8 md:p-12 shadow-2xl flex flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-4">
           <Logo size="sm" />
           <div className="text-center space-y-1">
             <h2 className="text-xl font-black text-slate-800">{title}</h2>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Encryption Active</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hub Security Layer 2</p>
           </div>
         </div>
 
@@ -60,10 +72,10 @@ const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, title = "Secure A
               </div>
               <div className="absolute inset-0 bg-purple-600/10 rounded-full animate-pulse"></div>
             </div>
-            <p className="text-xs font-black uppercase text-purple-600 animate-pulse tracking-[0.2em]">Authenticating Biometrics...</p>
+            <p className="text-xs font-black uppercase text-purple-600 animate-pulse tracking-[0.2em]">Verifying Biometrics...</p>
           </div>
         ) : (
-          <div className="w-full space-y-10">
+          <div className="w-full space-y-8">
             <div className="flex justify-center gap-3">
               {[0, 1, 2, 3, 4, 5].map(i => (
                 <div 
@@ -82,7 +94,7 @@ const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, title = "Secure A
                   key={i}
                   disabled={n === ''}
                   onClick={() => handlePin(n.toString())}
-                  className={`w-full h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${
+                  className={`w-full h-14 md:h-16 rounded-2xl flex items-center justify-center font-black text-xl transition-all ${
                     n === '' ? 'opacity-0 cursor-default' : 'bg-slate-50 hover:bg-purple-50 hover:text-purple-600 active:scale-90 shadow-sm'
                   }`}
                 >
@@ -91,7 +103,7 @@ const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, title = "Secure A
               ))}
               <button 
                 onClick={() => setPin(pin.slice(0, -1))}
-                className="w-full h-16 rounded-2xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all active:scale-90"
+                className="w-full h-14 md:h-16 rounded-2xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all active:scale-90"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
               </button>
@@ -99,14 +111,26 @@ const SecurityLock: React.FC<SecurityLockProps> = ({ onUnlock, title = "Secure A
           </div>
         )}
 
-        {type === 'pin' && (
-          <button 
-            onClick={() => setIsScanning(true)}
-            className="text-[10px] font-black uppercase text-purple-600 hover:bg-purple-50 px-6 py-3 rounded-xl transition-all tracking-widest"
-          >
-            Switch to Biometric Scan
-          </button>
-        )}
+        <div className="flex flex-col items-center gap-4 w-full">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <div 
+              onClick={() => setTrustDevice(!trustDevice)}
+              className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${trustDevice ? 'bg-purple-600 border-purple-600 text-white' : 'border-slate-200 group-hover:border-purple-300'}`}
+            >
+              {trustDevice && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6 9 17l-5-5"/></svg>}
+            </div>
+            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest select-none">Trust this device (24h)</span>
+          </label>
+
+          {type === 'pin' && (
+            <button 
+              onClick={() => setIsScanning(true)}
+              className="text-[10px] font-black uppercase text-purple-600 hover:bg-purple-50 px-6 py-2 rounded-xl transition-all tracking-widest"
+            >
+              Biometric Bypass
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

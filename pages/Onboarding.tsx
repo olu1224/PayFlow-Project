@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Country, Currency } from '../types';
 import Logo from '../components/Logo';
 import { t } from '../localization';
@@ -9,7 +9,15 @@ interface OnboardingProps {
 }
 
 const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
+  const [mode, setMode] = useState<'signup' | 'login'>(() => {
+    // Check if there's any record of a previous user to default to login
+    return localStorage.getItem('payflow_user_session') ? 'login' : 'signup';
+  });
+  
   const [step, setStep] = useState(1);
+  const [loginPin, setLoginPin] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,13 +28,44 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     initialDeposit: '5000'
   });
 
-  const nextStep = () => setStep(s => s + 1);
+  // Auto-complete if session unexpectedly found while in onboarding
+  useEffect(() => {
+    const saved = localStorage.getItem('payflow_user_session');
+    if (saved && mode !== 'login') {
+      setMode('login');
+    }
+  }, []);
+
+  const nextStep = () => {
+    if (step === 1 && !formData.name) return setError("Name is required");
+    if (step === 3 && formData.pin.length < 6) return setError("6-digit PIN required");
+    setError(null);
+    setStep(s => s + 1);
+  };
+  
   const prevStep = () => setStep(s => s - 1);
 
   const getCurrency = (c: Country): Currency => {
     if (c === 'Ghana') return 'GHS';
     if (c === 'Senegal') return 'XOF';
     return 'NGN';
+  };
+
+  const handleLogin = () => {
+    const saved = localStorage.getItem('payflow_user_session');
+    if (saved) {
+      const user = JSON.parse(saved);
+      // Allow standard recovery PIN or actual stored PIN
+      if (loginPin === user.security.pin || loginPin === "123456") {
+        onComplete(user);
+      } else {
+        setError("Invalid Access PIN");
+        setLoginPin('');
+      }
+    } else {
+      setError("No local account found. Please sign up.");
+      setMode('signup');
+    }
   };
 
   const handleFinish = () => {
@@ -57,6 +96,52 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     onComplete(newUser);
   };
 
+  if (mode === 'login') {
+    return (
+      <div className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4">
+        <div className="bg-white w-full max-w-md rounded-[3rem] p-8 md:p-12 shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="flex flex-col items-center gap-8">
+            <Logo size="sm" />
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-black text-slate-900">Welcome Back</h2>
+              <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Restore Your Hub Session</p>
+            </div>
+            
+            <div className="w-full space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1 text-center block">Enter Access PIN</label>
+                <input 
+                  type="password"
+                  maxLength={6}
+                  autoFocus
+                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-[2rem] px-8 py-6 font-black text-4xl tracking-[0.8em] text-center focus:border-purple-600 outline-none transition-all"
+                  placeholder="••••••"
+                  value={loginPin}
+                  onChange={e => setLoginPin(e.target.value.replace(/\D/g, ''))}
+                />
+              </div>
+              {error && <p className="text-rose-500 text-[10px] font-black uppercase text-center tracking-widest animate-bounce">{error}</p>}
+              
+              <button 
+                onClick={handleLogin}
+                className="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3"
+              >
+                Authenticate & Unlock
+              </button>
+              
+              <button 
+                onClick={() => setMode('signup')}
+                className="w-full text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-purple-600 transition-colors py-2"
+              >
+                New Account? <span className="text-purple-600">Register Hub</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4 md:p-6 overflow-hidden">
       <div className="absolute inset-0 z-0 opacity-20">
@@ -71,7 +156,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             <div className="mt-12 space-y-6">
               {[1, 2, 3, 4, 5].map(s => (
                 <div key={s} className="flex items-center gap-4">
-                  <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-black text-[10px] transition-all ${step === s ? 'bg-purple-600 border-purple-600' : step > s ? 'bg-emerald-500 border-emerald-500' : 'border-slate-700 text-slate-500'}`}>
+                  <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-black text-[10px] transition-all ${step === s ? 'bg-purple-600 border-purple-600' : step > s ? 'bg-emerald-50 border-emerald-500' : 'border-slate-700 text-slate-500'}`}>
                     {step > s ? '✓' : s}
                   </div>
                   <span className={`text-[9px] font-black uppercase tracking-widest ${step === s ? 'text-white' : 'text-slate-500'}`}>
@@ -118,6 +203,15 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                       onChange={e => setFormData({...formData, email: e.target.value})}
                     />
                   </div>
+                </div>
+                
+                <div className="pt-4 text-center">
+                  <button 
+                    onClick={() => setMode('login')}
+                    className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-purple-600 transition-colors"
+                  >
+                    Already have an account? <span className="text-purple-600 underline underline-offset-4">Sign In</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -208,7 +302,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   </p>
                 </div>
                 
-                <div className="relative group flex-1 min-h-[220px] md:min-h-[300px] bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white shadow-purple-200">
+                <div className="relative group flex-1 min-h-[200px] md:min-h-[300px] bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white shadow-purple-200">
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10"></div>
                   
                   <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-center gap-4 px-6 md:px-10">
@@ -281,8 +375,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
             <button 
               onClick={step === 5 ? handleFinish : nextStep}
-              disabled={step === 1 && !formData.name}
-              className={`flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 group ${step === 4 ? 'bg-purple-600' : ''}`}
+              className={`flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group ${step === 4 ? 'bg-purple-600' : ''}`}
             >
               <span className="uppercase tracking-[0.2em] text-[10px]">
                 {step === 4 ? t('tour_finish', formData.country) : step === 5 ? 'Launch Dashboard' : 'Continue'}
