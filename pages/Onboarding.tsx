@@ -64,7 +64,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600 rounded-full blur-[120px] animate-pulse delay-700"></div>
       </div>
 
-      <div className="bg-white w-full max-w-4xl rounded-[3rem] md:rounded-[4rem] shadow-2xl relative z-10 overflow-hidden flex flex-col md:flex-row min-h-[500px] md:min-h-[650px] transition-all duration-500">
+      <div className="bg-white w-full max-w-4xl rounded-[3rem] md:rounded-[4rem] shadow-2xl relative z-10 overflow-hidden flex flex-col md:flex-row h-full max-h-[850px] md:h-auto transition-all duration-500">
         <div className="md:w-1/4 bg-slate-900 p-8 md:p-10 text-white flex flex-col justify-between hidden md:flex">
           <div>
             <Logo size="sm" />
@@ -89,10 +89,10 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           </div>
         </div>
 
-        <div className="flex-1 p-8 md:p-16 flex flex-col relative">
-          <div className="flex-1">
+        <div className="flex-1 p-6 md:p-16 flex flex-col h-full overflow-hidden">
+          <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
             {step === 1 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
+              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 pb-4">
                 <div className="space-y-2">
                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Create Account</h2>
                   <p className="text-slate-500 font-medium text-lg">Define your identity on the hub.</p>
@@ -123,7 +123,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
 
             {step === 2 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
+              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 pb-4">
                 <div className="space-y-2">
                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Region & Profile</h2>
                   <p className="text-slate-500 font-medium text-lg">Localizing your financial grid.</p>
@@ -131,7 +131,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 gap-3">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Primary Region</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {(['Nigeria', 'Ghana', 'Senegal'] as Country[]).map(c => (
                         <button 
                           key={c}
@@ -167,7 +167,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
 
             {step === 3 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500">
+              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 pb-4">
                 <div className="space-y-2">
                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Access Shield</h2>
                   <p className="text-slate-500 font-medium text-lg">Define security protocols.</p>
@@ -198,33 +198,31 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
 
             {step === 4 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 flex flex-col h-full">
+              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 flex flex-col h-full pb-4">
                 <div className="space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                  <h2 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight">
                     {t('tour_welcome_title', formData.country)}
                   </h2>
-                  <p className="text-slate-500 font-medium text-lg">
+                  <p className="text-slate-500 font-medium text-base md:text-lg">
                     {t('tour_welcome_desc', formData.country)}
                   </p>
                 </div>
                 
-                {/* Cinematic Video Placeholder Wrapper */}
-                <div className="relative group flex-1 min-h-[300px] bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white shadow-purple-200">
+                <div className="relative group flex-1 min-h-[220px] md:min-h-[300px] bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white shadow-purple-200">
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10"></div>
                   
-                  {/* Localized Floating animated messages */}
-                  <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-center gap-6 px-10">
-                    <div className="bg-white/10 backdrop-blur-xl p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-left duration-1000 delay-500">
-                      <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">{t('tour_step1_title', formData.country)}</p>
-                      <p className="text-xs text-white font-bold leading-tight max-w-[200px]">{t('tour_step1_desc', formData.country)}</p>
+                  <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-center gap-4 px-6 md:px-10">
+                    <div className="bg-white/10 backdrop-blur-xl p-4 md:p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-left duration-1000 delay-500">
+                      <p className="text-[8px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">{t('tour_step1_title', formData.country)}</p>
+                      <p className="text-[10px] md:text-xs text-white font-bold leading-tight max-w-[150px] md:max-w-[200px]">{t('tour_step1_desc', formData.country)}</p>
                     </div>
-                    <div className="self-end bg-white/10 backdrop-blur-xl p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-right duration-1000 delay-1000">
-                      <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">{t('tour_step2_title', formData.country)}</p>
-                      <p className="text-xs text-white font-bold leading-tight max-w-[200px]">{t('tour_step2_desc', formData.country)}</p>
+                    <div className="self-end bg-white/10 backdrop-blur-xl p-4 md:p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-right duration-1000 delay-1000">
+                      <p className="text-[8px] md:text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">{t('tour_step2_title', formData.country)}</p>
+                      <p className="text-[10px] md:text-xs text-white font-bold leading-tight max-w-[150px] md:max-w-[200px]">{t('tour_step2_desc', formData.country)}</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-xl p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-left duration-1000 delay-[1500ms]">
-                      <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">{t('tour_step3_title', formData.country)}</p>
-                      <p className="text-xs text-white font-bold leading-tight max-w-[200px]">{t('tour_step3_desc', formData.country)}</p>
+                    <div className="bg-white/10 backdrop-blur-xl p-4 md:p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-left duration-1000 delay-[1500ms]">
+                      <p className="text-[8px] md:text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">{t('tour_step3_title', formData.country)}</p>
+                      <p className="text-[10px] md:text-xs text-white font-bold leading-tight max-w-[150px] md:max-w-[200px]">{t('tour_step3_desc', formData.country)}</p>
                     </div>
                   </div>
 
@@ -238,8 +236,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     <source src="https://assets.mixkit.co/videos/preview/mixkit-circuit-board-animation-loop-9556-large.mp4" type="video/mp4" />
                   </video>
                   
-                  <div className="absolute bottom-10 left-10 right-10 z-30">
-                     <div className="flex items-center gap-3 bg-purple-600 text-white px-5 py-2.5 rounded-full w-fit text-[9px] font-black uppercase tracking-widest animate-bounce">
+                  <div className="absolute bottom-6 md:bottom-10 left-6 md:left-10 right-6 md:right-10 z-30">
+                     <div className="flex items-center gap-3 bg-purple-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full w-fit text-[8px] md:text-[9px] font-black uppercase tracking-widest animate-bounce">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                         Briefing in Progress
                      </div>
@@ -249,34 +247,34 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
 
             {step === 5 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 text-center flex flex-col items-center">
+              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 text-center flex flex-col items-center pb-4">
                 <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center animate-bounce-slow shadow-xl mb-4">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M20 6L9 17l-5-5"/></svg>
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Briefing Complete</h2>
+                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Briefing Complete</h2>
                   <p className="text-slate-500 font-medium text-lg">Your unique financial hub is ready to launch.</p>
                 </div>
-                <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-100 w-full text-left space-y-4">
+                <div className="bg-slate-50 p-6 md:p-8 rounded-[3rem] border border-slate-100 w-full text-left space-y-4 shadow-inner">
                    <div className="flex justify-between border-b border-slate-200 pb-3">
-                     <span className="text-[10px] font-black uppercase text-slate-400">UID Status</span>
-                     <span className="text-[10px] font-black text-emerald-500">ASSIGNED & PRIVATE</span>
+                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">UID Status</span>
+                     <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">ASSIGNED & PRIVATE</span>
                    </div>
                    <div className="flex justify-between border-b border-slate-200 pb-3">
-                     <span className="text-[10px] font-black uppercase text-slate-400">Regional Gateway</span>
-                     <span className="text-[10px] font-black text-slate-800">{formData.country} Hub Active</span>
+                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Regional Gateway</span>
+                     <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{formData.country} Hub Active</span>
                    </div>
-                   <p className="text-[10px] text-slate-400 font-medium leading-relaxed">Proceed to manage your capital with Gemini-powered intelligence and robust asset isolation.</p>
+                   <p className="text-[11px] text-slate-400 font-bold leading-relaxed italic opacity-80 text-center">Proceed to manage your capital with Gemini-powered intelligence and robust asset isolation.</p>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex gap-4 mt-12 shrink-0">
+          <div className="flex gap-4 mt-6 md:mt-12 shrink-0 border-t border-slate-100 pt-6">
             {step > 1 && step < 4 && (
               <button 
                 onClick={prevStep}
-                className="px-8 py-5 rounded-[2rem] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]"
+                className="px-6 md:px-8 py-4 md:py-5 rounded-[2rem] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]"
               >
                 Back
               </button>
@@ -284,7 +282,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             <button 
               onClick={step === 5 ? handleFinish : nextStep}
               disabled={step === 1 && !formData.name}
-              className={`flex-1 bg-slate-900 text-white py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 group ${step === 4 ? 'bg-purple-600' : ''}`}
+              className={`flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 group ${step === 4 ? 'bg-purple-600' : ''}`}
             >
               <span className="uppercase tracking-[0.2em] text-[10px]">
                 {step === 4 ? t('tour_finish', formData.country) : step === 5 ? 'Launch Dashboard' : 'Continue'}
@@ -302,6 +300,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
       `}</style>
     </div>
   );

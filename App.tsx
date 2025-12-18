@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import TopBar from './components/TopBar';
+import MobileNav from './components/MobileNav';
 import Dashboard from './pages/Dashboard';
 import CryptoHub from './pages/CryptoHub';
 import LoansPage from './pages/LoansPage';
@@ -162,19 +163,20 @@ const App: React.FC = () => {
   if (!user) return <Onboarding onComplete={handleOnboardingComplete} />;
 
   return (
-    <div className="flex h-screen flex-col bg-[#FDFDFD] overflow-hidden font-['Inter'] selection:bg-purple-100">
+    <div className="flex min-h-[100dvh] flex-col bg-[#FDFDFD] overflow-hidden font-['Inter'] selection:bg-purple-100 relative">
       {isLocked && <SecurityLock type={user.security.biometricsEnabled ? 'biometric' : 'pin'} onUnlock={() => setIsLocked(false)} />}
       <TopBar user={user} activeTab={activeTab} setActiveTab={setActiveTab} onOpenNotifications={() => setShowNotifications(!showNotifications)} onOpenSettings={() => setActiveTab('settings')} onUpdateCountry={switchCountry} />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto scroll-smooth relative z-10 p-4 md:p-8">
+        <div className="flex-1 overflow-y-auto scroll-smooth relative z-10 p-4 md:p-8 pb-32 xl:pb-8">
           {renderContent()}
         </div>
         <AIChat user={user} isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
         <VoiceAssistant user={user} isOpen={isVoiceAssistantOpen} onClose={() => setIsVoiceAssistantOpen(false)} />
       </main>
-      <div className="fixed bottom-12 right-12 flex flex-col gap-5 z-40">
-        <button onClick={handleLogout} className="w-16 h-16 bg-rose-50 rounded-[1.8rem] shadow-2xl flex items-center justify-center text-rose-500 hover:bg-rose-100 transition-all border border-rose-200 group" title="Logout"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y2="12" y1="12"/></svg></button>
-        <button onClick={() => setIsAIChatOpen(!isAIChatOpen)} className="w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-800 rounded-[2rem] shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-all ring-4 ring-white"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></button>
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="fixed bottom-28 md:bottom-12 right-6 md:right-12 flex flex-col gap-5 z-40">
+        <button onClick={handleLogout} className="w-14 h-14 md:w-16 md:h-16 bg-rose-50 rounded-2xl md:rounded-[1.8rem] shadow-2xl flex items-center justify-center text-rose-500 hover:bg-rose-100 transition-all border border-rose-200 group" title="Logout"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y2="12" y1="12"/></svg></button>
+        <button onClick={() => setIsAIChatOpen(!isAIChatOpen)} className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-purple-600 to-indigo-800 rounded-2xl md:rounded-[2rem] shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-all ring-4 ring-white"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></button>
       </div>
     </div>
   );
