@@ -1,0 +1,8 @@
+{
+  "name": "PayFlow Pro - Pan-African Financial Hub",
+  "description": "A comprehensive financial management application for users in Nigeria, Ghana, and Senegal. Pay bills, transfer funds, buy/sell crypto, request loans, analyze credit scores with AI, and deploy autonomous financial agents.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}
