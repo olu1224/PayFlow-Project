@@ -57,7 +57,6 @@ const StatusBadge: React.FC<{ status: AIAgent['status'] }> = ({ status }) => {
         {config.icon}
         <span className="text-[10px] font-black uppercase tracking-widest">{status}</span>
       </span>
-      {/* Background layer for shimmer effect on deploying */}
       {status === 'deploying' && (
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-shimmer-sweep"></div>
       )}
@@ -89,14 +88,13 @@ const AiAgentsPage: React.FC<AiAgentsPageProps> = ({ user, agents, setAgents }) 
     setIsModalOpen(false);
     setNewAgent({ name: '', role: 'Financial Intelligence', description: '' });
 
-    // Simulate "activation" after a few seconds
     setTimeout(() => {
       setAgents(current => current.map(a => a.id === agent.id ? { ...a, status: 'active' } : a));
     }, 4000);
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-[1600px] mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
       <style>{`
         @keyframes pulse-subtle {
           0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
@@ -124,37 +122,37 @@ const AiAgentsPage: React.FC<AiAgentsPageProps> = ({ user, agents, setAgents }) 
 
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black text-slate-800 tracking-tight">AI Agents</h1>
-          <p className="text-slate-500 font-medium">Autonomous workers handling your finances 24/7.</p>
+          <h1 className="text-4xl font-[900] text-slate-900 tracking-tight leading-none">AI Agents</h1>
+          <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-[10px] mt-2">Autonomous Hub Grid Active</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-slate-900 text-white px-8 py-3.5 rounded-[1.5rem] font-black shadow-xl shadow-slate-200 hover:scale-105 transition-all flex items-center gap-2"
+          className="bg-slate-900 text-white px-10 py-4 rounded-[2rem] font-black shadow-2xl hover:scale-105 transition-all flex items-center gap-3 uppercase tracking-widest text-[10px]"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Deploy New Agent
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Deploy Protocol
         </button>
       </header>
 
-      <div className="bg-gradient-to-br from-purple-600 via-indigo-700 to-indigo-900 p-1 rounded-[3rem] shadow-2xl shadow-purple-200">
-        <div className="bg-white/5 backdrop-blur-3xl p-10 rounded-[2.9rem] flex flex-col md:flex-row items-center gap-10">
-          <div className="w-40 h-40 bg-white/10 rounded-[2.5rem] flex items-center justify-center flex-shrink-0 border border-white/20 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-transparent opacity-0 group-hover:opacity-10 transition-opacity"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="relative z-10"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+      <div className="bg-slate-900 p-1.5 rounded-[4rem] shadow-2xl">
+        <div className="bg-[#0D1525] p-12 md:p-16 rounded-[3.8rem] flex flex-col md:flex-row items-center gap-12 border border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full blur-[150px] opacity-10 -mr-48 -mt-48"></div>
+          <div className="w-48 h-48 bg-white/5 rounded-[3rem] flex items-center justify-center flex-shrink-0 border border-white/10 relative overflow-hidden group">
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="opacity-40"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/></svg>
           </div>
-          <div className="space-y-4 text-center md:text-left">
-             <h3 className="text-3xl font-black text-white leading-tight">Agent Factory</h3>
-             <p className="text-purple-100/80 text-lg max-w-2xl font-medium leading-relaxed">
-               Create specialized agents to monitor exchange rates, automate savings, or hunt for the best bills and investment opportunities across West Africa.
+          <div className="space-y-6 text-center md:text-left relative z-10">
+             <h3 className="text-4xl font-[900] text-white tracking-tighter leading-none">Agent Synthesis Factory</h3>
+             <p className="text-slate-400 text-lg max-w-3xl font-bold leading-relaxed">
+               Construct specialized neural workers to automate utility settlements, cross-border arbitrage, or enterprise-grade invoice tracking across the regional grid.
              </p>
-             <div className="flex flex-wrap gap-4 pt-2">
-                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-2xl border border-white/10 text-white text-xs font-bold">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  Real-time Execution
+             <div className="flex flex-wrap gap-4 pt-4 justify-center md:justify-start">
+                <div className="flex items-center gap-3 bg-white/5 px-6 py-3 rounded-2xl border border-white/10 text-white text-[10px] font-black uppercase tracking-widest">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  Neural Scoring
                 </div>
-                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-2xl border border-white/10 text-white text-xs font-bold">
+                <div className="flex items-center gap-3 bg-white/5 px-6 py-3 rounded-2xl border border-white/10 text-white text-[10px] font-black uppercase tracking-widest">
                   <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  Cross-Platform Access
+                  Multi-Node API
                 </div>
              </div>
           </div>
@@ -163,125 +161,75 @@ const AiAgentsPage: React.FC<AiAgentsPageProps> = ({ user, agents, setAgents }) 
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
         {agents.map(agent => (
-          <div key={agent.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 hover:border-purple-200 transition-all shadow-sm hover:shadow-xl group flex flex-col relative overflow-hidden h-full">
-            <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-10 transition-opacity duration-700 pointer-events-none">
-              <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/></svg>
-            </div>
-            
-            <div className="flex items-center justify-between mb-8 relative z-10">
+          <div key={agent.id} className="bg-white p-10 rounded-[3.5rem] border border-slate-100 hover:border-purple-200 transition-all shadow-sm hover:shadow-2xl group flex flex-col relative overflow-hidden h-full">
+            <div className="flex items-center justify-between mb-10 relative z-10">
               <StatusBadge status={agent.status} />
               <button 
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
                 onClick={() => setAgents(prev => prev.filter(a => a.id !== agent.id))}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
               </button>
             </div>
 
-            <div className="flex-1 space-y-3 relative z-10">
-              <h4 className="font-black text-slate-800 text-2xl tracking-tight leading-tight group-hover:text-purple-600 transition-colors">{agent.name}</h4>
-              <p className="text-xs text-purple-600 font-black uppercase tracking-widest">{agent.role}</p>
-              <p className="text-slate-500 font-medium text-sm leading-relaxed pt-2">
+            <div className="flex-1 space-y-4 relative z-10">
+              <h4 className="font-[900] text-slate-900 text-3xl tracking-tighter leading-none">{agent.name}</h4>
+              <p className="text-[10px] text-purple-600 font-black uppercase tracking-[0.3em]">{agent.role}</p>
+              <p className="text-slate-500 font-bold text-sm leading-relaxed pt-4">
                 {agent.description}
               </p>
             </div>
 
-            <div className="mt-10 pt-6 border-t border-slate-50 flex items-center justify-between relative z-10">
-              <div className="flex -space-x-2">
+            <div className="mt-10 pt-8 border-t border-slate-50 flex items-center justify-between relative z-10">
+              <div className="flex -space-x-3">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center overflow-hidden transition-transform group-hover:-translate-y-1 group-hover:rotate-6">
+                  <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center overflow-hidden transition-transform group-hover:-translate-y-2">
                     <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${agent.id}-${i}`} alt="Avatar" />
                   </div>
                 ))}
               </div>
-              <button className={`px-6 py-3 rounded-2xl font-black text-xs transition-all active:scale-95 ${
-                agent.status === 'active' ? 'bg-slate-900 text-white shadow-lg shadow-slate-200 hover:bg-slate-800' : 'bg-purple-600 text-white shadow-lg shadow-purple-100 hover:bg-purple-700'
+              <button className={`px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 ${
+                agent.status === 'active' ? 'bg-slate-900 text-white shadow-xl hover:bg-slate-800' : 'bg-purple-600 text-white shadow-xl'
               }`}>
-                {agent.status === 'active' ? 'View Activity' : 'Deploying...'}
+                {agent.status === 'active' ? 'Audit Logs' : 'Syncing...'}
               </button>
             </div>
           </div>
         ))}
-
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-slate-50 p-8 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center group hover:bg-white hover:border-purple-300 transition-all min-h-[300px]"
-        >
-          <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" className="group-hover:stroke-purple-600 transition-colors"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-          </div>
-          <p className="font-black text-slate-400 group-hover:text-slate-800 transition-colors">Add New Agent</p>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 group-hover:text-purple-600 transition-colors mt-1">Deploy Custom Logic</p>
-        </button>
       </div>
 
-      {/* Deployment Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Agent Deployment</h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-xl rounded-[4rem] p-12 md:p-16 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-4xl font-[900] text-slate-900 tracking-tighter">Protocol Deployment</h2>
+              <button onClick={() => setIsModalOpen(false)} className="p-4 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-2xl transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 
-            <form onSubmit={handleDeploy} className="space-y-6">
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Agent Identifier Name</label>
-                <input 
-                  required
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-bold text-slate-700 focus:ring-2 focus:ring-purple-600 outline-none transition-all"
-                  placeholder="e.g. Arbitrage Hunter"
-                  value={newAgent.name}
-                  onChange={e => setNewAgent({...newAgent, name: e.target.value})}
-                />
+            <form onSubmit={handleDeploy} className="space-y-8">
+              <div className="space-y-3">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Agent Handle</label>
+                <input required className="w-full bg-slate-50 border-2 border-slate-100 rounded-[2rem] px-8 py-6 font-black text-slate-900 focus:border-purple-600 outline-none transition-all" placeholder="e.g. Settlement Ghost" value={newAgent.name} onChange={e => setNewAgent({...newAgent, name: e.target.value})} />
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Specialized Role</label>
-                <select 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-bold text-slate-700 focus:ring-2 focus:ring-purple-600 outline-none transition-all appearance-none"
-                  value={newAgent.role}
-                  onChange={e => setNewAgent({...newAgent, role: e.target.value})}
-                >
+              <div className="space-y-3">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned Logic Class</label>
+                <select className="w-full bg-slate-50 border-2 border-slate-100 rounded-[2rem] px-8 py-6 font-black text-slate-900 focus:border-purple-600 outline-none transition-all appearance-none" value={newAgent.role} onChange={e => setNewAgent({...newAgent, role: e.target.value})}>
                   <option>Financial Intelligence</option>
                   <option>Auto-Budgeting</option>
                   <option>Bill Optimization</option>
                   <option>Crypto Arbitrage</option>
-                  <option>Savings Automation</option>
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mission Description</label>
-                <textarea 
-                  required
-                  rows={3}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-medium text-slate-600 focus:ring-2 focus:ring-purple-600 outline-none transition-all resize-none"
-                  placeholder="Describe the specific task for this agent..."
-                  value={newAgent.description}
-                  onChange={e => setNewAgent({...newAgent, description: e.target.value})}
-                />
+              <div className="space-y-3">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Execution Brief</label>
+                <textarea required rows={3} className="w-full bg-slate-50 border-2 border-slate-100 rounded-[2rem] px-8 py-6 font-bold text-slate-700 focus:border-purple-600 outline-none transition-all resize-none" placeholder="Describe instructions..." value={newAgent.description} onChange={e => setNewAgent({...newAgent, description: e.target.value})} />
               </div>
 
-              <div className="bg-purple-50 p-6 rounded-3xl border border-purple-100 flex items-start gap-4">
-                 <div className="w-10 h-10 bg-purple-600 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-200">
-                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                 </div>
-                 <div className="space-y-1">
-                   <p className="text-xs font-black text-purple-700 uppercase tracking-tight">Autonomous Safety Protocol</p>
-                   <p className="text-[10px] text-purple-600 font-medium leading-relaxed">Agent status defaults to <span className="font-bold">deploying</span>. Security checks take approx. 60 seconds before full activation.</p>
-                 </div>
-              </div>
-
-              <button 
-                type="submit"
-                className="w-full bg-purple-600 text-white py-5 rounded-[2rem] font-black hover:bg-purple-700 transition-all shadow-xl shadow-purple-100 flex items-center justify-center gap-3 group"
-              >
-                <span>Authorize & Deploy Agent</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </button>
+              <button type="submit" className="w-full bg-purple-600 text-white py-7 rounded-[2.5rem] font-black hover:bg-purple-700 transition-all shadow-2xl uppercase tracking-[0.2em] text-xs">Authorize & Deploy</button>
             </form>
           </div>
         </div>

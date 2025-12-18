@@ -3,13 +3,28 @@ export type Country = 'Nigeria' | 'Ghana' | 'Senegal';
 export type Currency = 'NGN' | 'GHS' | 'XOF';
 
 export interface User {
+  uid: string;
   name: string;
+  email?: string;
   country: Country;
   currency: Currency;
   balance: number;
   creditScore: number;
   avatar?: string;
   isBusiness?: boolean;
+  isOnboarded: boolean;
+  security: {
+    twoFactorEnabled: boolean;
+    biometricsEnabled: boolean;
+    hideBalances: boolean;
+    lastLogin: string;
+    pin: string;
+  };
+  preferences: {
+    notifications: boolean;
+    marketing: boolean;
+    dailyLimit: number;
+  };
 }
 
 export interface Transaction {

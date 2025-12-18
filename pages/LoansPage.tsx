@@ -39,15 +39,19 @@ const LoansPage: React.FC<LoansPageProps> = ({ user, transactions, onNewTransact
   };
 
   const getScoreTheme = (score: number) => {
-    if (score >= 700) return { color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100', label: 'Excellent', gradient: 'from-emerald-500 to-teal-400' };
-    if (score >= 500) return { color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-100', label: 'Fair', gradient: 'from-amber-500 to-orange-400' };
-    return { color: 'text-rose-500', bg: 'bg-rose-50', border: 'border-rose-100', label: 'Low', gradient: 'from-rose-500 to-pink-400' };
+    if (score >= 700) return { color: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-100', label: 'Excellent', gradient: ['#10b981', '#34d399'] };
+    if (score >= 500) return { color: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-100', label: 'Fair', gradient: ['#f59e0b', '#fbbf24'] };
+    return { color: 'text-rose-500', bg: 'bg-rose-50', border: 'border-rose-100', label: 'Low', gradient: ['#f43f5e', '#fb7185'] };
   };
 
-  const isPositiveInsight = (text: string) => {
-    const positiveWords = ['consistent', 'growth', 'excellent', 'high', 'low risk', 'strong', 'regular', 'active', 'healthy', 'maintain', 'good'];
-    const lowerText = text.toLowerCase();
-    return positiveWords.some(word => lowerText.includes(word));
+  const getInsightCategory = (text: string) => {
+    const lower = text.toLowerCase();
+    const positive = ['consistent', 'growth', 'excellent', 'high', 'low risk', 'strong', 'regular', 'active', 'healthy', 'maintain', 'good', 'success'];
+    const negative = ['risk', 'high risk', 'limited', 'missed', 'default', 'low', 'unstable', 'shortage', 'first-time', 'missing'];
+    
+    if (positive.some(word => lower.includes(word))) return 'positive';
+    if (negative.some(word => lower.includes(word))) return 'negative';
+    return 'neutral';
   };
 
   const handleRequestLoan = (type: 'nano' | 'business' | 'merchant') => {
@@ -67,7 +71,16 @@ const LoansPage: React.FC<LoansPageProps> = ({ user, transactions, onNewTransact
     }, 3000);
   };
 
-  const theme = analysisResult ? getScoreTheme(analysisResult.creditScore) : { color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-100', label: 'Unknown', gradient: 'from-purple-600 to-indigo-500' };
+  const theme = analysisResult ? getScoreTheme(analysisResult.creditScore) : { color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-100', label: 'Unknown', gradient: ['#9333ea', '#7c3aed'] };
+
+  // Gauge constants
+  const radius = 100;
+  const strokeWidth = 16;
+  const normalizedRadius = radius - strokeWidth / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const arcLength = circumference * 0.75; // 270 degree arc
+  const scorePercent = analysisResult ? (analysisResult.creditScore - 300) / 550 : 0;
+  const strokeDashoffset = arcLength - scorePercent * arcLength;
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-300 pb-20">
@@ -82,7 +95,7 @@ const LoansPage: React.FC<LoansPageProps> = ({ user, transactions, onNewTransact
       <section className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden relative">
         <div className={`absolute top-0 right-0 w-80 h-80 ${theme.bg} rounded-full -mr-40 -mt-40 blur-3xl opacity-30 transition-colors duration-700`}></div>
         
-        <div className="relative z-10 flex flex-col lg:flex-row gap-12">
+        <div className="relative z-10 flex flex-col lg:row-reverse lg:flex-row gap-12">
           <div className="lg:w-1/3 space-y-8">
             <div className={`w-16 h-16 ${theme.bg} ${theme.color} rounded-2xl flex items-center justify-center shadow-lg transition-colors duration-700 ring-4 ring-white`}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
@@ -111,43 +124,86 @@ const LoansPage: React.FC<LoansPageProps> = ({ user, transactions, onNewTransact
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                   <div className="flex flex-col items-center">
                     <div className="relative w-64 h-64 flex items-center justify-center">
-                      <svg className="w-full h-full transform -rotate-90">
+                      <svg width={radius * 2} height={radius * 2} className="transform -rotate-[225deg]">
                         <defs>
-                          <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#9333ea" />
-                            <stop offset="100%" stopColor="#4f46e5" />
+                          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor={theme.gradient[0]} />
+                            <stop offset="100%" stopColor={theme.gradient[1]} />
                           </linearGradient>
                         </defs>
-                        <circle cx="128" cy="128" r="110" stroke="#e2e8f0" strokeWidth="18" fill="transparent" />
-                        <circle 
-                          cx="128" cy="128" r="110" 
-                          stroke="url(#scoreGrad)" 
-                          strokeWidth="18" 
-                          fill="transparent" 
-                          strokeDasharray={690} 
-                          strokeDashoffset={690 - (690 * (analysisResult.creditScore - 300)) / 550} 
+                        {/* Background track */}
+                        <circle
+                          cx={radius}
+                          cy={radius}
+                          r={normalizedRadius}
+                          fill="transparent"
+                          stroke="#e2e8f0"
+                          strokeWidth={strokeWidth}
+                          strokeDasharray={circumference}
+                          style={{ strokeDashoffset: circumference * 0.25 }}
                           strokeLinecap="round"
-                          className="transition-all duration-1000 ease-out" 
+                        />
+                        {/* Colored gauge */}
+                        <circle
+                          cx={radius}
+                          cy={radius}
+                          r={normalizedRadius}
+                          fill="transparent"
+                          stroke="url(#gaugeGrad)"
+                          strokeWidth={strokeWidth}
+                          strokeDasharray={circumference}
+                          strokeDashoffset={strokeDashoffset + (circumference * 0.25)}
+                          strokeLinecap="round"
+                          className="transition-all duration-[1500ms] ease-out-expo"
                         />
                       </svg>
-                      <div className="absolute text-center">
+                      
+                      <div className="absolute flex flex-col items-center justify-center text-center mt-4">
                         <span className="text-7xl font-black text-slate-900 tracking-tighter leading-none">{analysisResult.creditScore}</span>
-                        <p className={`text-[10px] font-black ${theme.color} uppercase tracking-[0.2em] mt-3`}>{analysisResult.riskLevel} Risk</p>
+                        <div className={`mt-3 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${theme.bg} ${theme.color} border border-current/20`}>
+                          {analysisResult.riskLevel} Risk
+                        </div>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2">Neural Rating</p>
+                      </div>
+
+                      {/* Markers */}
+                      <div className="absolute inset-0 pointer-events-none">
+                         <div className="absolute bottom-4 left-4 text-[8px] font-black text-slate-300 uppercase rotate-45">300</div>
+                         <div className="absolute bottom-4 right-4 text-[8px] font-black text-slate-300 uppercase -rotate-45">850</div>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-6">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Neural Insights</h3>
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Behavioral Observations</h3>
                     <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                       {analysisResult.keyObservations.map((obs: string, i: number) => {
-                        const isGood = isPositiveInsight(obs);
+                        const category = getInsightCategory(obs);
+                        const styles = {
+                          positive: 'bg-emerald-50/50 border-emerald-100 text-emerald-600 icon-emerald',
+                          negative: 'bg-rose-50/50 border-rose-100 text-rose-600 icon-rose',
+                          neutral: 'bg-amber-50/50 border-amber-100 text-amber-600 icon-amber'
+                        }[category];
+
                         return (
-                          <div key={i} className={`p-5 rounded-2xl border flex items-start gap-4 transition-all ${isGood ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50/50 border-rose-100'}`}>
-                            <div className={`mt-0.5 shrink-0 ${isGood ? 'text-emerald-500' : 'text-rose-500'}`}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5">{isGood ? <path d="M20 6 9 17l-5-5"/> : <path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="10"/>}</svg>
+                          <div key={i} className={`p-5 rounded-2xl border flex items-start gap-4 transition-all hover:shadow-md ${styles}`}>
+                            <div className="mt-0.5 shrink-0">
+                              {category === 'positive' ? (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M20 6 9 17l-5-5"/></svg>
+                              ) : category === 'negative' ? (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="10"/></svg>
+                              ) : (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                              )}
                             </div>
-                            <p className={`text-xs font-bold leading-tight ${isGood ? 'text-emerald-800' : 'text-rose-800'}`}>{obs}</p>
+                            <div>
+                               <p className={`text-xs font-bold leading-tight ${category === 'positive' ? 'text-emerald-800' : category === 'negative' ? 'text-rose-800' : 'text-amber-800'}`}>
+                                 {obs}
+                               </p>
+                               <span className="text-[8px] font-black uppercase opacity-60 tracking-wider mt-1 block">
+                                 {category === 'positive' ? 'Positive Signal' : category === 'negative' ? 'Risk Factor' : 'System Notice'}
+                               </span>
+                            </div>
                           </div>
                         );
                       })}
@@ -157,25 +213,29 @@ const LoansPage: React.FC<LoansPageProps> = ({ user, transactions, onNewTransact
 
                 <div className="pt-8 border-t border-slate-200">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Growth Plan</h3>
-                    <div className="bg-slate-900 text-white px-5 py-2.5 rounded-2xl flex items-center gap-2">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Growth Engine Tips</h3>
+                    <div className="bg-slate-900 text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 shadow-lg">
                        <span className="text-[9px] font-black text-slate-400 uppercase">Limit:</span>
                        <span className="font-black text-sm">{currencySymbol}{analysisResult.maxEligibleAmount.toLocaleString()}</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {analysisResult.improvementTips.map((tip: string, i: number) => {
-                      const isPositive = isPositiveInsight(tip);
+                      const category = getInsightCategory(tip);
+                      const isPositive = category === 'positive';
                       return (
-                        <div key={i} className={`p-4 rounded-2xl border flex items-center gap-4 group transition-all cursor-default ${isPositive ? 'bg-emerald-50/30 border-emerald-50 hover:border-emerald-200' : 'bg-rose-50/30 border-rose-50 hover:border-rose-200'}`}>
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${isPositive ? 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white' : 'bg-rose-100 text-rose-600 group-hover:bg-rose-500 group-hover:text-white'}`}>
+                        <div key={i} className={`p-4 rounded-2xl border flex items-center gap-4 group transition-all cursor-default ${isPositive ? 'bg-emerald-50/30 border-emerald-50 hover:border-emerald-200' : 'bg-amber-50/30 border-amber-50 hover:border-amber-200'}`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${isPositive ? 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white' : 'bg-amber-100 text-amber-600 group-hover:bg-amber-500 group-hover:text-white'}`}>
                              {isPositive ? (
                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
                              ) : (
                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
                              )}
                           </div>
-                          <p className={`text-[11px] font-bold leading-tight ${isPositive ? 'text-emerald-700' : 'text-rose-700'}`}>{tip}</p>
+                          <div>
+                            <p className={`text-[11px] font-bold leading-tight ${isPositive ? 'text-emerald-700' : 'text-amber-700'}`}>{tip}</p>
+                            <span className={`text-[8px] font-black uppercase opacity-60 tracking-wider mt-1 block`}>Action Required</span>
+                          </div>
                         </div>
                       );
                     })}
@@ -312,6 +372,19 @@ const LoansPage: React.FC<LoansPageProps> = ({ user, transactions, onNewTransact
           }}
         />
       )}
+      
+      <style>{`
+        .ease-out-expo {
+          transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+      `}</style>
     </div>
   );
 };

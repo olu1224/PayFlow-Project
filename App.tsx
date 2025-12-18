@@ -1,70 +1,96 @@
 
-import React, { useState } from 'react';
-import Sidebar from './components/Sidebar';
+import React, { useState, useEffect } from 'react';
 import TopBar from './components/TopBar';
 import Dashboard from './pages/Dashboard';
 import CryptoHub from './pages/CryptoHub';
 import LoansPage from './pages/LoansPage';
-import AiAgentsPage from './pages/AiAgentsPage';
 import BudgetPage from './pages/BudgetPage';
 import History from './pages/History';
 import Beneficiaries from './pages/Beneficiaries';
 import Settings from './pages/Settings';
 import InvestmentPortfolio from './pages/InvestmentPortfolio';
-import AIPlanning from './pages/AIPlanning';
-import AutoCategorization from './pages/AutoCategorization';
-import Analytics from './pages/Analytics';
-import RecurringPayments from './pages/RecurringPayments';
 import NearbyHub from './pages/NearbyHub';
 import B2BPortal from './pages/B2BPortal';
-import AiImageEditor from './pages/AiImageEditor';
-import AiImageGenerator from './pages/AiImageGenerator';
+import Membership from './pages/Membership';
 import AIChat from './components/AIChat';
 import VoiceAssistant from './components/VoiceAssistant';
 import DepositModal from './components/DepositModal';
+import Onboarding from './pages/Onboarding';
+import SecurityLock from './components/SecurityLock';
 import { User, Country, Currency, Transaction, Beneficiary, BudgetGoal, CryptoAsset, AIAgent, RecurringPayment } from './types';
 
+export interface Trade {
+  id: string;
+  asset: string;
+  amount: number;
+  priceUsd: number;
+  type: 'buy' | 'sell' | 'withdraw';
+  date: string;
+  address?: string;
+}
+
 const App: React.FC = () => {
+  const [isReady, setIsReady] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [user, setUser] = useState<User>({
-    name: 'Jay Adebayo',
-    country: 'Nigeria',
-    currency: 'NGN',
-    balance: 854500,
-    creditScore: 720,
-    isBusiness: true
-  });
+  const [user, setUser] = useState<User | null>(null);
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: '1', name: 'IKEDC Postpaid', category: 'Electricity', amount: 32000, date: 'Nov 25, 4:39 AM', status: 'completed', type: 'debit' },
-    { id: '2', name: 'Canal+', category: 'Cable TV', amount: 21000, date: 'Nov 24, 09:12 AM', status: 'completed', type: 'debit' },
-    { id: '3', name: 'Spectranet', category: 'Internet', amount: 12500, date: 'Nov 24, 4:39 AM', status: 'completed', type: 'debit' },
-    { id: 'p1', name: 'Transfer to Kola', category: 'Transfers', amount: 45000, date: 'Just now', status: 'pending', type: 'debit' },
-    { id: '4', name: 'Airtel Data', category: 'Mobile Data', amount: 4000, date: 'Nov 23, 11:05 AM', status: 'completed', type: 'debit' },
-    { id: '5', name: 'MTN Airtime', category: 'Airtime', amount: 2000, date: 'Nov 22, 10:15 AM', status: 'completed', type: 'debit' },
-    { id: '6', name: 'Inflow: Payroll', category: 'Salary', amount: 500000, date: 'Nov 20, 08:00 AM', status: 'completed', type: 'credit' },
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [recurringPayments, setRecurringPayments] = useState<RecurringPayment[]>([]);
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [goals, setGoals] = useState<BudgetGoal[]>([]);
+  const [portfolio, setPortfolio] = useState<CryptoAsset[]>([]);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [agents, setAgents] = useState<AIAgent[]>([]);
 
-  const [recurringPayments, setRecurringPayments] = useState<RecurringPayment[]>([
-    { id: 'r1', name: 'Monthly Data', amount: 15000, frequency: 'monthly', startDate: '2024-12-01', category: 'Data', active: true },
-    { id: 'r2', name: 'DSTV Premium', amount: 25000, frequency: 'monthly', startDate: '2024-12-05', category: 'TV', active: true },
-  ]);
+  useEffect(() => {
+    const saved = localStorage.getItem('payflow_user_session');
+    if (saved) {
+      setUser(JSON.parse(saved));
+      setIsLocked(true);
+    }
+    setIsReady(true);
+  }, []);
 
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([
-    { id: '1', name: 'Mobile Data', type: 'mobile', category: 'Data', account: '08123456789', provider: 'Airtel', country: 'Nigeria' },
-  ]);
+  useEffect(() => {
+    if (!user) return;
+    const uid = user.uid;
+    const loadData = <T,>(key: string, defaultValue: T): T => {
+      const saved = localStorage.getItem(`payflow_${uid}_${key}`);
+      return saved ? JSON.parse(saved) : defaultValue;
+    };
+    setTransactions(loadData('txs', []));
+    setRecurringPayments(loadData('recurring', []));
+    setBeneficiaries(loadData('beneficiaries', []));
+    setGoals(loadData('goals', []));
+    setPortfolio(loadData('portfolio', [
+      { id: 'btc', name: 'Bitcoin', symbol: 'BTC', amount: 0, valueUsd: 42350 },
+      { id: 'eth', name: 'Ethereum', symbol: 'ETH', amount: 0, valueUsd: 2240 },
+      { id: 'usdt', name: 'Tether', symbol: 'USDT', amount: 0, valueUsd: 1 },
+    ]));
+    setTrades(loadData('trades', []));
+  }, [user?.uid]);
 
-  const [goals, setGoals] = useState<BudgetGoal[]>([
-    { id: '1', title: 'New House Fund', current: 1250000, target: 15000000, color: 'bg-purple-600' },
-  ]);
+  useEffect(() => {
+    if (!user) return;
+    const uid = user.uid;
+    localStorage.setItem(`payflow_${uid}_txs`, JSON.stringify(transactions));
+    localStorage.setItem(`payflow_${uid}_trades`, JSON.stringify(trades));
+    localStorage.setItem(`payflow_${uid}_portfolio`, JSON.stringify(portfolio));
+    localStorage.setItem(`payflow_${uid}_goals`, JSON.stringify(goals));
+    localStorage.setItem(`payflow_${uid}_beneficiaries`, JSON.stringify(beneficiaries));
+  }, [transactions, trades, portfolio, goals, beneficiaries, user?.uid]);
 
-  const [portfolio, setPortfolio] = useState<CryptoAsset[]>([
-    { id: 'btc', name: 'Bitcoin', symbol: 'BTC', amount: 0.05, valueUsd: 2117.5 },
-  ]);
+  const handleOnboardingComplete = (newUser: User) => {
+    setUser(newUser);
+    localStorage.setItem('payflow_user_session', JSON.stringify(newUser));
+  };
 
-  const [agents, setAgents] = useState<AIAgent[]>([
-    { id: '1', name: 'Budget Guard', role: 'Monitoring', status: 'active', description: 'Monitors spending across all categories and sends real-time alerts.' },
-  ]);
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('payflow_user_session');
+    setActiveTab('dashboard');
+  };
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
@@ -72,166 +98,83 @@ const App: React.FC = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
 
   const switchCountry = (country: Country) => {
-    let curr: Currency = 'NGN';
-    if (country === 'Ghana') curr = 'GHS';
-    if (country === 'Senegal') curr = 'XOF';
-    setUser(prev => ({ ...prev, country, currency: curr }));
+    if (!user) return;
+    let curr: Currency = country === 'Ghana' ? 'GHS' : country === 'Senegal' ? 'XOF' : 'NGN';
+    const updated = { ...user, country, currency: curr };
+    setUser(updated);
+    localStorage.setItem('payflow_user_session', JSON.stringify(updated));
   };
 
   const handleNewTransaction = (amount: number, name: string, category: string = 'General', isRecurring: boolean = false, schedule?: any) => {
+    if (!user) return;
     if (isRecurring && schedule) {
-      const newRP: RecurringPayment = {
-        id: Math.random().toString(36).substr(2, 9),
-        name,
-        amount,
-        frequency: schedule.freq as any,
-        startDate: schedule.date,
-        category,
-        active: true
-      };
-      setRecurringPayments([newRP, ...recurringPayments]);
+      setRecurringPayments([{ id: Math.random().toString(36).substr(2, 9), name, amount, frequency: schedule.freq as any, startDate: schedule.date, category, active: true }, ...recurringPayments]);
       return;
     }
-
-    const newTx: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      category,
-      amount,
-      date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }),
-      status: 'completed',
-      type: 'debit'
-    };
+    const newTx: Transaction = { id: Math.random().toString(36).substr(2, 9), name, category, amount, date: 'Just now', status: 'completed', type: 'debit' };
     setTransactions([newTx, ...transactions]);
-    setUser(prev => ({ ...prev, balance: prev.balance - amount }));
+    setUser(prev => prev ? ({ ...prev, balance: prev.balance - amount }) : null);
   };
 
-  const handleDeposit = (amount: number, method: string) => {
-    const newTx: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: `Deposit via ${method}`,
-      category: 'Deposit',
-      amount,
-      date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }),
-      status: 'completed',
-      type: 'credit'
-    };
-    setTransactions([newTx, ...transactions]);
-    setUser(prev => ({ ...prev, balance: prev.balance + amount }));
+  const handleTrade = (assetId: string, amount: number, priceUsd: number, isBuy: boolean) => {
+    if (!user) return;
+    const rate = user.currency === 'NGN' ? 1550 : user.currency === 'GHS' ? 12 : 610;
+    const totalLocal = amount * priceUsd * rate;
+    if (isBuy && user.balance < totalLocal) return alert("Insufficient balance.");
+    setPortfolio(prev => prev.map(a => a.id === assetId ? { ...a, amount: isBuy ? a.amount + amount : a.amount - amount } : a));
+    setUser(prev => prev ? ({ ...prev, balance: isBuy ? prev.balance - totalLocal : prev.balance + totalLocal }) : null);
+    setTrades([{ id: `t-${Date.now()}`, asset: assetId.toUpperCase(), amount, priceUsd, type: isBuy ? 'buy' : 'sell', date: 'Just now' }, ...trades]);
   };
 
-  const handleWithdraw = (amount: number, destination: string) => {
-    const newTx: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: `Withdrawal to ${destination}`,
-      category: 'Withdrawal',
-      amount,
-      date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }),
-      status: 'completed',
-      type: 'debit'
-    };
-    setTransactions([newTx, ...transactions]);
-    setUser(prev => ({ ...prev, balance: prev.balance - amount }));
+  const handleWithdrawCrypto = (assetId: string, amount: number, address: string, priceUsd: number) => {
+    if (!user) return;
+    const asset = portfolio.find(a => a.id === assetId);
+    if (!asset || asset.amount < amount) return alert(`Insufficient ${assetId.toUpperCase()} balance.`);
+    setPortfolio(prev => prev.map(a => a.id === assetId ? { ...a, amount: a.amount - amount } : a));
+    setTrades([{ id: `tw-${Date.now()}`, asset: assetId.toUpperCase(), amount, priceUsd, type: 'withdraw', address, date: 'Just now' }, ...trades]);
+  };
+
+  const handleUpgrade = (plan: string) => {
+    if (!user) return;
+    const updated = { ...user, creditScore: 800 }; // Mock "Elite" activation by bumping credit score/tier
+    setUser(updated);
+    localStorage.setItem('payflow_user_session', JSON.stringify(updated));
   };
 
   const renderContent = () => {
+    if (!user) return null;
     switch (activeTab) {
-      case 'dashboard': return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={handleWithdraw} onExplorePlanning={() => setActiveTab('ai-planning')} onNearbyClick={() => setActiveTab('nearby')} />;
+      case 'dashboard': return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={(amt, method) => setUser({...user, balance: user.balance + amt})} onWithdraw={(amt) => setUser({...user, balance: user.balance - amt})} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} />;
       case 'history': return <History user={user} transactions={transactions} />;
-      case 'beneficiaries': return <Beneficiaries user={user} beneficiaries={beneficiaries} onAdd={(b) => setBeneficiaries([...beneficiaries, { ...b, id: Date.now().toString() }])} onDelete={(id) => setBeneficiaries(filtered => filtered.filter(b => b.id !== id))} />;
-      case 'recurring': return (
-        <RecurringPayments 
-          user={user} 
-          recurringPayments={recurringPayments} 
-          onToggle={(id) => setRecurringPayments(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))}
-          onDelete={(id) => setRecurringPayments(prev => prev.filter(p => p.id !== id))}
-          onScheduleNew={handleNewTransaction}
-        />
-      );
-      case 'crypto': return <CryptoHub user={user} portfolio={portfolio} onTrade={(id, amt, price, isBuy) => {}} />;
       case 'loans': return <LoansPage user={user} transactions={transactions} onNewTransaction={handleNewTransaction} />;
-      case 'ai-agents': return <AiAgentsPage user={user} agents={agents} setAgents={setAgents} />;
-      case 'ai-image-edit': return <AiImageEditor user={user} />;
-      case 'ai-gen': return <AiImageGenerator user={user} />;
-      case 'budget': return <BudgetPage user={user} goals={goals} onAddGoal={(g) => setGoals([...goals, { ...g, id: Date.now().toString() }])} />;
-      case 'nearby': return <NearbyHub user={user} />;
-      case 'b2b': return <B2BPortal user={user} />;
-      case 'settings': return <Settings user={user} onUpdateCountry={switchCountry} />;
+      case 'crypto': return <CryptoHub user={user} portfolio={portfolio} trades={trades} onTrade={handleTrade} onWithdrawCrypto={handleWithdrawCrypto} />;
       case 'investment-portfolio': return <InvestmentPortfolio user={user} />;
-      case 'ai-planning': return <AIPlanning user={user} />;
-      case 'auto-categorize': return <AutoCategorization user={user} transactions={transactions} />;
-      case 'analytics': return <Analytics user={user} transactions={transactions} />;
-      default: return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={handleWithdraw} onExplorePlanning={() => setActiveTab('ai-planning')} onNearbyClick={() => setActiveTab('nearby')} />;
+      case 'money-hub': return <BudgetPage user={user} goals={goals} onAddGoal={(g) => setGoals([...goals, { ...g, id: Date.now().toString() }])} />;
+      case 'b2b': return <B2BPortal user={user} />;
+      case 'nearby': return <NearbyHub user={user} />;
+      case 'settings': return <Settings user={user} onUpdateCountry={switchCountry} />;
+      case 'membership': return <Membership user={user} onUpgrade={handleUpgrade} />;
+      default: return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={(amt, method) => setUser({...user, balance: user.balance + amt})} onWithdraw={(amt) => setUser({...user, balance: user.balance - amt})} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} />;
     }
   };
 
-  return (
-    <div className="flex h-screen flex-col bg-[#FDFEFE] overflow-hidden font-['Inter'] selection:bg-purple-100">
-      <TopBar 
-        user={user} 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenNotifications={() => setShowNotifications(!showNotifications)} 
-        onOpenSettings={() => setActiveTab('settings')}
-        onUpdateCountry={switchCountry}
-      />
-      
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[50vw] h-[50vh] bg-gradient-to-bl from-purple-500/5 via-transparent to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-[50vw] h-[50vh] bg-gradient-to-tr from-indigo-500/5 via-transparent to-transparent"></div>
-        </div>
+  if (!isReady) return null;
+  if (!user) return <Onboarding onComplete={handleOnboardingComplete} />;
 
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 scroll-smooth relative z-10">
+  return (
+    <div className="flex h-screen flex-col bg-[#FDFDFD] overflow-hidden font-['Inter'] selection:bg-purple-100">
+      {isLocked && <SecurityLock type={user.security.biometricsEnabled ? 'biometric' : 'pin'} onUnlock={() => setIsLocked(false)} />}
+      <TopBar user={user} activeTab={activeTab} setActiveTab={setActiveTab} onOpenNotifications={() => setShowNotifications(!showNotifications)} onOpenSettings={() => setActiveTab('settings')} onUpdateCountry={switchCountry} />
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <div className="flex-1 overflow-y-auto scroll-smooth relative z-10 p-4 md:p-8">
           {renderContent()}
         </div>
-
         <AIChat user={user} isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
         <VoiceAssistant user={user} isOpen={isVoiceAssistantOpen} onClose={() => setIsVoiceAssistantOpen(false)} />
-        {isDepositOpen && <DepositModal isOpen={true} onClose={() => setIsDepositOpen(false)} user={user} onDeposit={handleDeposit} />}
-
-        {showNotifications && (
-          <div className="absolute top-4 right-8 w-96 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in slide-in-from-top-2 duration-200 ring-1 ring-slate-900/5">
-            <div className="bg-slate-900 p-6 text-white">
-               <h3 className="font-black text-lg">Activity Stream</h3>
-               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Real-time alerts</p>
-            </div>
-            <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
-              {transactions.slice(0, 3).map((n, i) => (
-                <div key={i} className="p-5 hover:bg-slate-50 transition-colors flex gap-4 items-start">
-                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5"/></svg>
-                   </div>
-                   <div>
-                      <p className="text-sm font-black text-slate-800">Payment Processed</p>
-                      <p className="text-xs text-slate-500 leading-relaxed my-1">Your {n.category} bill for {n.name} has been completed.</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="inline-block bg-slate-100 px-2.5 py-1 rounded-lg text-[10px] font-black text-slate-800">{user.currency} {n.amount.toLocaleString()}</span>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{n.date}</p>
-                      </div>
-                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </main>
-
-      <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-40">
-        <button 
-          onClick={() => setIsVoiceAssistantOpen(true)}
-          className="w-14 h-14 bg-slate-900 rounded-2xl shadow-2xl shadow-slate-900/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group relative border border-slate-800"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span className="absolute right-full mr-6 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-2xl border border-slate-800">Voice Live</span>
-        </button>
-        <button 
-          onClick={() => setIsAIChatOpen(!isAIChatOpen)}
-          className="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl shadow-2xl shadow-purple-600/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group relative border border-purple-400/20"
-        >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-          <span className="absolute right-full mr-6 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-2xl border border-purple-500">Ask PayFlow</span>
-        </button>
+      <div className="fixed bottom-12 right-12 flex flex-col gap-5 z-40">
+        <button onClick={handleLogout} className="w-16 h-16 bg-rose-50 rounded-[1.8rem] shadow-2xl flex items-center justify-center text-rose-500 hover:bg-rose-100 transition-all border border-rose-200 group" title="Logout"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y2="12" y1="12"/></svg></button>
+        <button onClick={() => setIsAIChatOpen(!isAIChatOpen)} className="w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-800 rounded-[2rem] shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-all ring-4 ring-white"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></button>
       </div>
     </div>
   );

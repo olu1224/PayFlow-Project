@@ -17,12 +17,37 @@ export async function generateImage(prompt: string, size: "1K" | "2K" | "4K" = "
     },
   });
 
-  for (const part of response.candidates[0].content.parts) {
-    if (part.inlineData) {
-      return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+  for (const candidate of response.candidates) {
+    for (const part of candidate.content.parts) {
+      if (part.inlineData) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
     }
   }
   throw new Error("No image data returned from Gemini");
+}
+
+export async function generateVideo(prompt: string) {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  let operation = await ai.models.generateVideos({
+    model: 'veo-3.1-fast-generate-preview',
+    prompt: prompt,
+    config: {
+      numberOfVideos: 1,
+      resolution: '720p',
+      aspectRatio: '16:9'
+    }
+  });
+  
+  while (!operation.done) {
+    await new Promise(resolve => setTimeout(resolve, 10000));
+    operation = await ai.operations.getVideosOperation({ operation: operation });
+  }
+
+  const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
 }
 
 export async function editImage(imagePath: string, prompt: string) {
