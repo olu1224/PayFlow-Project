@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Invoice } from '../types';
+import { findNearbyBanksOrAgents } from '../geminiService';
 
 const B2BPortal: React.FC<{ user: User }> = ({ user }) => {
   const [invoices, setInvoices] = useState<Invoice[]>([
@@ -12,11 +13,45 @@ const B2BPortal: React.FC<{ user: User }> = ({ user }) => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [bulkData, setBulkData] = useState('');
   
+  // Bank Locator State
+  const [bankNetwork, setBankNetwork] = useState<{ text: string, grounding: any } | null>(null);
+  const [isSearchingBanks, setIsSearchingBanks] = useState(false);
+  const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
+  
   const [newInvoice, setNewInvoice] = useState({
     clientName: '',
     amount: '',
     dueDate: ''
   });
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {
+          const fallbacks = {
+            'Nigeria': { lat: 6.5244, lng: 3.3792 }, // Lagos
+            'Ghana': { lat: 5.6037, lng: -0.1870 }, // Accra
+            'Senegal': { lat: 14.7167, lng: -17.4677 } // Dakar
+          };
+          setLocation(fallbacks[user.country]);
+        }
+      );
+    }
+  }, [user.country]);
+
+  const fetchBankNetwork = async () => {
+    if (!location) return;
+    setIsSearchingBanks(true);
+    try {
+      const res = await findNearbyBanksOrAgents(location, `Find major commercial banks and business finance hubs in ${user.country}`);
+      setBankNetwork(res);
+    } catch (e) {
+      console.error("Network discovery failed", e);
+    } finally {
+      setIsSearchingBanks(false);
+    }
+  };
 
   const handleBulkTransfer = () => {
     if (!bulkData.trim()) return;
@@ -81,6 +116,79 @@ const B2BPortal: React.FC<{ user: User }> = ({ user }) => {
           </div>
         ))}
       </div>
+
+      {/* Financial Network Locator Section */}
+      <section className="bg-slate-50 p-1 rounded-[3.5rem] border border-slate-100 shadow-inner">
+        <div className="bg-white p-10 rounded-[3.4rem] space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-2">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                AI Network Explorer
+              </div>
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Bank & Agent Network</h2>
+              <p className="text-slate-500 text-sm font-medium">Locate verified settlement points and financial partners across {user.country}.</p>
+            </div>
+            {!bankNetwork && (
+              <button 
+                onClick={fetchBankNetwork}
+                disabled={isSearchingBanks}
+                className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black flex items-center gap-2 hover:bg-slate-800 transition-all disabled:opacity-50"
+              >
+                {isSearchingBanks ? (
+                  <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                )}
+                {isSearchingBanks ? 'Scanning Grid...' : 'Discover Local Network'}
+              </button>
+            )}
+          </div>
+
+          {bankNetwork && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in slide-in-from-bottom-6 duration-500">
+              <div className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Strategic Overview</h3>
+                <p className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-wrap">
+                  {bankNetwork.text}
+                </p>
+                <div className="mt-8 flex gap-3">
+                   <button onClick={() => setBankNetwork(null)} className="text-[10px] font-black uppercase text-slate-400 hover:text-rose-500 transition-colors">Clear Results</button>
+                   <button onClick={fetchBankNetwork} className="text-[10px] font-black uppercase text-purple-600 hover:underline">Re-scan Area</button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Verified Settlement Points</h3>
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {bankNetwork.grounding?.map((chunk: any, i: number) => (
+                    chunk.maps && (
+                      <a 
+                        key={i} 
+                        href={chunk.maps.uri} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-50 transition-all group"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 10V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/></svg>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-black text-slate-800 text-sm truncate">{chunk.maps.title || 'Settlement Node'}</p>
+                            <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Active Verification</p>
+                          </div>
+                        </div>
+                        <svg className="text-slate-300 group-hover:text-emerald-500 transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      </a>
+                    )
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
@@ -242,6 +350,19 @@ const B2BPortal: React.FC<{ user: User }> = ({ user }) => {
           </div>
         </div>
       )}
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+      `}</style>
     </div>
   );
 };

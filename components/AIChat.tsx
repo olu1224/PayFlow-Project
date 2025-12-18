@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createAIChat } from '../geminiService';
+import { User } from '../types';
 
-const AIChat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const AIChat: React.FC<{ user: User; isOpen: boolean; onClose: () => void }> = ({ user, isOpen, onClose }) => {
   const [messages, setMessages] = useState<{ role: 'user' | 'model'; text: string }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -11,9 +12,10 @@ const AIChat: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, on
 
   useEffect(() => {
     if (isOpen && !chatRef.current) {
-      chatRef.current = createAIChat();
+      // Fix: Passed user.country as required by createAIChat (Expected 1 argument)
+      chatRef.current = createAIChat(user.country);
     }
-  }, [isOpen]);
+  }, [isOpen, user.country]);
 
   useEffect(() => {
     if (scrollRef.current) {

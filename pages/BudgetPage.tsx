@@ -18,7 +18,8 @@ const BudgetPage: React.FC<BudgetPageProps> = ({ user, goals, onAddGoal }) => {
   const getStrategy = async () => {
     setLoading(true);
     try {
-      const res = await generateBudgetStrategy(goals, user.balance, user.currency);
+      // Fix: Passed user.country as required by generateBudgetStrategy (Expected 4 arguments)
+      const res = await generateBudgetStrategy(goals, user.balance, user.currency, user.country);
       setStrategy(res);
     } catch (e) {
       console.error(e);

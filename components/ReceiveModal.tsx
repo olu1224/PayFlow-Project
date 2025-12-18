@@ -25,6 +25,8 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({ isOpen, onClose, user }) =>
     'Senegal': { bank: 'Wave / UBA Senegal', number: '776204918', name: user.name }
   }[user.country];
 
+  const paymentLink = `https://payflow.pro/pay/${user.name.replace(/\s+/g, '').toLowerCase()}${parseFloat(requestAmount) > 0 ? `?amount=${requestAmount}` : ''}`;
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setIsCopied(true);
@@ -32,9 +34,7 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({ isOpen, onClose, user }) =>
   };
 
   const generateLink = () => {
-    const amt = parseFloat(requestAmount) || 0;
-    const link = `https://payflow.pro/pay/${user.name.replace(/\s+/g, '').toLowerCase()}${amt > 0 ? `?amount=${amt}` : ''}`;
-    handleCopy(link);
+    handleCopy(paymentLink);
     setShowQR(true);
   };
 
@@ -141,29 +141,39 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({ isOpen, onClose, user }) =>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </button>
                 ) : (
-                  <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 flex flex-col items-center animate-in zoom-in-95 duration-300">
-                    <div className="bg-white p-6 rounded-[2.5rem] shadow-xl border border-slate-100 mb-6">
-                      {/* Placeholder for QR Code */}
-                      <div className="w-40 h-40 bg-slate-900 rounded-3xl flex items-center justify-center p-4">
-                        <div className="grid grid-cols-4 grid-rows-4 gap-2 w-full h-full opacity-80">
-                          {[...Array(16)].map((_, i) => (
-                            <div key={i} className={`rounded-sm ${Math.random() > 0.5 ? 'bg-white' : 'bg-transparent'}`}></div>
-                          ))}
+                  <div className="bg-slate-50 p-8 rounded-[3rem] border border-slate-100 flex flex-col animate-in zoom-in-95 duration-300">
+                    <div className="flex items-center gap-6 mb-8">
+                      <div className="bg-white p-4 rounded-3xl shadow-xl border border-slate-100 shrink-0">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(paymentLink)}`} 
+                          alt="Payment QR" 
+                          className="w-32 h-32"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-4">
+                        <div>
+                          <p className="font-black text-slate-800 leading-tight">Payment Link Ready</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Share link or scan QR</p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <button 
+                            onClick={() => handleCopy(paymentLink)}
+                            className="w-full bg-white border border-slate-200 text-slate-600 py-3 rounded-xl font-black text-xs hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            {isCopied ? 'Copied!' : 'Copy Link'}
+                          </button>
+                          <button className="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                            Share Link
+                          </button>
                         </div>
                       </div>
                     </div>
-                    <p className="font-black text-slate-800 mb-1">Payment Link Ready</p>
-                    <p className="text-xs font-bold text-slate-400 mb-6">Share this with anyone to pay via card</p>
-                    <div className="flex gap-3 w-full">
-                      <button 
-                        onClick={() => handleCopy(`https://payflow.pro/pay/${user.name.toLowerCase()}`)}
-                        className="flex-1 bg-white border border-slate-200 text-slate-600 py-3 rounded-2xl font-black text-xs hover:bg-slate-50 transition-all"
-                      >
-                        Copy Link
-                      </button>
-                      <button className="flex-1 bg-slate-900 text-white py-3 rounded-2xl font-black text-xs hover:bg-slate-800 transition-all">
-                        Share Link
-                      </button>
+                    
+                    <div className="bg-white/50 p-4 rounded-2xl border border-slate-100">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Amount</p>
+                      <p className="font-black text-slate-800">{currencySymbol}{Number(requestAmount || 0).toLocaleString()}</p>
                     </div>
                   </div>
                 )}

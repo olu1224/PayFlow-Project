@@ -17,8 +17,11 @@ import Analytics from './pages/Analytics';
 import RecurringPayments from './pages/RecurringPayments';
 import NearbyHub from './pages/NearbyHub';
 import B2BPortal from './pages/B2BPortal';
+import AiImageEditor from './pages/AiImageEditor';
+import AiImageGenerator from './pages/AiImageGenerator';
 import AIChat from './components/AIChat';
 import VoiceAssistant from './components/VoiceAssistant';
+import DepositModal from './components/DepositModal';
 import { User, Country, Currency, Transaction, Beneficiary, BudgetGoal, CryptoAsset, AIAgent, RecurringPayment } from './types';
 
 const App: React.FC = () => {
@@ -66,6 +69,7 @@ const App: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false);
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
 
   const switchCountry = (country: Country) => {
     let curr: Currency = 'NGN';
@@ -145,8 +149,10 @@ const App: React.FC = () => {
         />
       );
       case 'crypto': return <CryptoHub user={user} portfolio={portfolio} onTrade={(id, amt, price, isBuy) => {}} />;
-      case 'loans': return <LoansPage user={user} transactions={transactions} />;
+      case 'loans': return <LoansPage user={user} transactions={transactions} onNewTransaction={handleNewTransaction} />;
       case 'ai-agents': return <AiAgentsPage user={user} agents={agents} setAgents={setAgents} />;
+      case 'ai-image-edit': return <AiImageEditor user={user} />;
+      case 'ai-gen': return <AiImageGenerator user={user} />;
       case 'budget': return <BudgetPage user={user} goals={goals} onAddGoal={(g) => setGoals([...goals, { ...g, id: Date.now().toString() }])} />;
       case 'nearby': return <NearbyHub user={user} />;
       case 'b2b': return <B2BPortal user={user} />;
@@ -160,25 +166,32 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-white overflow-hidden font-['Inter']">
+    <div className="flex h-screen flex-col bg-[#FDFEFE] overflow-hidden font-['Inter'] selection:bg-purple-100">
       <TopBar 
         user={user} 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenNotifications={() => setShowNotifications(!showNotifications)} 
         onOpenSettings={() => setActiveTab('settings')}
+        onUpdateCountry={switchCountry}
       />
       
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 scroll-smooth">
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[50vw] h-[50vh] bg-gradient-to-bl from-purple-500/5 via-transparent to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-[50vw] h-[50vh] bg-gradient-to-tr from-indigo-500/5 via-transparent to-transparent"></div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 scroll-smooth relative z-10">
           {renderContent()}
         </div>
 
-        <AIChat isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
-        <VoiceAssistant isOpen={isVoiceAssistantOpen} onClose={() => setIsVoiceAssistantOpen(false)} />
+        <AIChat user={user} isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
+        <VoiceAssistant user={user} isOpen={isVoiceAssistantOpen} onClose={() => setIsVoiceAssistantOpen(false)} />
+        {isDepositOpen && <DepositModal isOpen={true} onClose={() => setIsDepositOpen(false)} user={user} onDeposit={handleDeposit} />}
 
         {showNotifications && (
-          <div className="absolute top-4 right-8 w-96 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in slide-in-from-top-2 duration-200">
+          <div className="absolute top-4 right-8 w-96 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in slide-in-from-top-2 duration-200 ring-1 ring-slate-900/5">
             <div className="bg-slate-900 p-6 text-white">
                <h3 className="font-black text-lg">Activity Stream</h3>
                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Real-time alerts</p>
@@ -186,7 +199,7 @@ const App: React.FC = () => {
             <div className="divide-y divide-slate-50 max-h-[400px] overflow-y-auto">
               {transactions.slice(0, 3).map((n, i) => (
                 <div key={i} className="p-5 hover:bg-slate-50 transition-colors flex gap-4 items-start">
-                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 6 9 17l-5-5"/></svg>
                    </div>
                    <div>
@@ -207,17 +220,17 @@ const App: React.FC = () => {
       <div className="fixed bottom-10 right-10 flex flex-col gap-4 z-40">
         <button 
           onClick={() => setIsVoiceAssistantOpen(true)}
-          className="w-14 h-14 bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-400 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group relative"
+          className="w-14 h-14 bg-slate-900 rounded-2xl shadow-2xl shadow-slate-900/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group relative border border-slate-800"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span className="absolute right-full mr-6 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-2xl opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-2xl">Voice Live</span>
+          <span className="absolute right-full mr-6 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-2xl border border-slate-800">Voice Live</span>
         </button>
         <button 
           onClick={() => setIsAIChatOpen(!isAIChatOpen)}
-          className="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-[1.8rem] shadow-2xl shadow-purple-300 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group relative"
+          className="w-16 h-16 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl shadow-2xl shadow-purple-600/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group relative border border-purple-400/20"
         >
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-          <span className="absolute right-full mr-6 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-2xl opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-2xl">Ask PayFlow</span>
+          <span className="absolute right-full mr-6 bg-purple-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap pointer-events-none shadow-2xl border border-purple-500">Ask PayFlow</span>
         </button>
       </div>
     </div>

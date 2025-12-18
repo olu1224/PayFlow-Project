@@ -1,15 +1,64 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { User, Transaction } from '../types';
+
+type SortField = 'name' | 'category' | 'date' | 'amount';
+type SortOrder = 'asc' | 'desc';
+type FilterType = 'all' | 'debit' | 'credit' | 'deposit';
 
 const History: React.FC<{ user: User; transactions: Transaction[] }> = ({ user, transactions }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [filterType, setFilterType] = useState<FilterType>('all');
+
   const currencySymbol = user.currency === 'NGN' ? '₦' : user.currency === 'GHS' ? 'GH₵' : 'CFA';
 
-  const filtered = transactions.filter(tx => 
-    tx.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    tx.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const processedTransactions = useMemo(() => {
+    let filtered = transactions.filter(tx => 
+      tx.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      tx.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (filterType !== 'all') {
+      if (filterType === 'deposit') {
+        filtered = filtered.filter(tx => tx.category === 'Deposit');
+      } else {
+        filtered = filtered.filter(tx => tx.type === filterType);
+      }
+    }
+
+    return [...filtered].sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+
+      if (sortField === 'amount') {
+        return sortOrder === 'asc' ? (a.amount - b.amount) : (b.amount - a.amount);
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [transactions, searchTerm, sortField, sortOrder, filterType]);
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return (
+      <svg className="ml-1 opacity-20 group-hover:opacity-50 transition-opacity" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    );
+    return sortOrder === 'asc' 
+      ? <svg className="ml-1 text-purple-600" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+      : <svg className="ml-1 text-purple-600" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>;
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300 pb-20">
@@ -38,10 +87,15 @@ const History: React.FC<{ user: User; transactions: Transaction[] }> = ({ user, 
               />
             </div>
             <div className="flex gap-2">
-              <select className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 font-bold text-sm focus:outline-none hover:bg-slate-100 transition-colors">
-                <option>All Types</option>
-                <option>Debits</option>
-                <option>Credits</option>
+              <select 
+                className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 font-bold text-sm focus:outline-none hover:bg-slate-100 transition-colors"
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as FilterType)}
+              >
+                <option value="all">All Types</option>
+                <option value="debit">Debits</option>
+                <option value="credit">Credits</option>
+                <option value="deposit">Deposits</option>
               </select>
               <select className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 font-bold text-sm focus:outline-none hover:bg-slate-100 transition-colors">
                 <option>This Month</option>
@@ -56,26 +110,52 @@ const History: React.FC<{ user: User; transactions: Transaction[] }> = ({ user, 
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-10">
               <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-white shadow-sm border-b border-slate-100">
-                <th className="py-4 pl-8 bg-white/95 backdrop-blur-sm">Description</th>
-                <th className="py-4 bg-white/95 backdrop-blur-sm">Category</th>
-                <th className="py-4 bg-white/95 backdrop-blur-sm">Date & Time</th>
+                <th 
+                  className="py-4 pl-8 bg-white/95 backdrop-blur-sm cursor-pointer select-none group transition-colors hover:text-purple-600"
+                  onClick={() => handleSort('name')}
+                >
+                  <div className="flex items-center">Description <SortIcon field="name" /></div>
+                </th>
+                <th 
+                  className="py-4 bg-white/95 backdrop-blur-sm cursor-pointer select-none group transition-colors hover:text-purple-600"
+                  onClick={() => handleSort('category')}
+                >
+                  <div className="flex items-center">Category <SortIcon field="category" /></div>
+                </th>
+                <th 
+                  className="py-4 bg-white/95 backdrop-blur-sm cursor-pointer select-none group transition-colors hover:text-purple-600"
+                  onClick={() => handleSort('date')}
+                >
+                  <div className="flex items-center">Date & Time <SortIcon field="date" /></div>
+                </th>
                 <th className="py-4 bg-white/95 backdrop-blur-sm">Status</th>
-                <th className="py-4 text-right pr-8 bg-white/95 backdrop-blur-sm">Amount</th>
+                <th 
+                  className="py-4 text-right pr-8 bg-white/95 backdrop-blur-sm cursor-pointer select-none group transition-colors hover:text-purple-600"
+                  onClick={() => handleSort('amount')}
+                >
+                  <div className="flex items-center justify-end">Amount <SortIcon field="amount" /></div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filtered.map(tx => (
+              {processedTransactions.map(tx => (
                 <tr key={tx.id} className="hover:bg-slate-50 transition-colors group">
                   <td className="py-5 pl-8">
                     <div className="flex items-center gap-3">
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${tx.type === 'credit' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-600'}`}>
-                        {tx.type === 'credit' ? '+' : '-'}
+                        {tx.category === 'Deposit' ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                        ) : tx.type === 'credit' ? '+' : '-'}
                       </div>
                       <span className="font-bold text-slate-800">{tx.name}</span>
                     </div>
                   </td>
                   <td className="py-5">
-                    <span className="text-xs font-black text-slate-500 uppercase tracking-tight bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">{tx.category}</span>
+                    <span className={`text-xs font-black uppercase tracking-tight px-2 py-1 rounded-lg border transition-colors ${
+                      tx.category === 'Deposit' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
+                    }`}>
+                      {tx.category}
+                    </span>
                   </td>
                   <td className="py-5">
                     <span className="text-xs font-medium text-slate-500">{tx.date}</span>
@@ -99,7 +179,7 @@ const History: React.FC<{ user: User; transactions: Transaction[] }> = ({ user, 
             </tbody>
           </table>
           
-          {filtered.length === 0 && (
+          {processedTransactions.length === 0 && (
             <div className="py-40 flex flex-col items-center justify-center text-slate-300">
                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m21 21-4.3-4.3"/><circle cx="11" cy="11" r="8"/></svg>

@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { connectLiveAssistant } from '../geminiService';
+import { User } from '../types';
 
-const VoiceAssistant: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const VoiceAssistant: React.FC<{ user: User; isOpen: boolean; onClose: () => void }> = ({ user, isOpen, onClose }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const sessionRef = useRef<any>(null);
@@ -58,6 +59,7 @@ const VoiceAssistant: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ is
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
 
+      // Fix: Passed user.country as required by connectLiveAssistant (Expected 2 arguments)
       const sessionPromise = connectLiveAssistant({
         onopen: () => {
           setIsActive(true);
@@ -86,7 +88,7 @@ const VoiceAssistant: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ is
         },
         onerror: (e: any) => console.error('Live error', e),
         onclose: () => setIsActive(false),
-      });
+      }, user.country);
       sessionRef.current = sessionPromise;
     } catch (e) {
       console.error(e);
