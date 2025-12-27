@@ -24,6 +24,11 @@ const PROVIDERS: Record<string, Record<string, string[]>> = {
     'Ghana': ['DSTV Ghana', 'GOTV Ghana', 'StarTimes GH'],
     'Senegal': ['Canal+ Sénégal', 'TNT Sénégal']
   },
+  'Water': {
+    'Nigeria': ['Lagos Water Corporation', 'Abuja Water Board'],
+    'Ghana': ['GWCL (Ghana Water)'],
+    'Senegal': ['Sen’Eau']
+  },
   'Food': {
     'Nigeria': ['Jumia Food', 'Chowdeck', 'Glovo NG', 'Bolt Food'],
     'Ghana': ['Glovo Ghana', 'Bolt Food GH', 'Hubtel Food'],
@@ -95,6 +100,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceNam
     if (d.includes('airtime')) return 'Airtime';
     if (d.includes('data') || d.includes('internet')) return 'Data';
     if (d.includes('tv') || d.includes('cable')) return 'TV';
+    if (d.includes('water')) return 'Water';
     if (d.includes('food')) return 'Food';
     if (d.includes('trans')) return 'Transfer';
     if (d.includes('invest')) return 'Investment';

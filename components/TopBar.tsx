@@ -25,10 +25,11 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg> },
+    { id: 'deal-forge', label: 'Deal Forge', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> },
+    { id: 'ai-gen', label: 'Smart Helpers', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg> },
     { id: 'history', label: 'History', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg> },
     { id: 'loans', label: 'Loans', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="M2 9V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1"/></svg> },
     { id: 'crypto', label: 'Crypto', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg> },
-    { id: 'investment-portfolio', label: 'Invest', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg> },
     { id: 'money-hub', label: 'Money Hub', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg> },
     { id: 'b2b', label: 'Business', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> },
     { id: 'nearby', label: 'Find Points', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> },
@@ -39,12 +40,12 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
       <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
         <Logo size="sm" />
         
-        <nav className="hidden xl:flex items-center gap-1 p-1 bg-slate-50 rounded-2xl border border-slate-200">
+        <nav className="hidden xl:flex items-center gap-1 p-1 bg-slate-50 rounded-2xl border border-slate-200 overflow-x-auto no-scrollbar max-w-full">
            {navItems.map(item => (
              <button 
                key={item.id}
                onClick={() => setActiveTab(item.id)}
-               className={`px-4 py-3 rounded-xl font-[900] text-[10px] uppercase tracking-[0.15em] transition-all flex items-center gap-2.5 group relative ${
+               className={`px-4 py-3 rounded-xl font-[900] text-[10px] uppercase tracking-[0.15em] transition-all flex items-center gap-2.5 group shrink-0 relative ${
                  activeTab === item.id 
                   ? 'text-purple-600 bg-white shadow-md ring-1 ring-black/5' 
                   : 'text-slate-400 hover:text-slate-900 hover:bg-white/50'

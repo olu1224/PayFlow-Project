@@ -9,15 +9,20 @@ interface OnboardingProps {
 }
 
 const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
-  const [mode, setMode] = useState<'signup' | 'login'>(() => {
-    // Check if there's any record of a previous user to default to login
-    return localStorage.getItem('payflow_user_session') ? 'login' : 'signup';
+  // mode can be 'choice', 'signup', or 'login'
+  const [mode, setMode] = useState<'choice' | 'signup' | 'login'>(() => {
+    return localStorage.getItem('payflow_user_session') ? 'login' : 'choice';
   });
   
   const [step, setStep] = useState(1);
-  const [loginPin, setLoginPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   
+  // Login State
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPin, setLoginPin] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  
+  // Signup State
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,14 +32,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     biometrics: true,
     initialDeposit: '5000'
   });
-
-  // Auto-complete if session unexpectedly found while in onboarding
-  useEffect(() => {
-    const saved = localStorage.getItem('payflow_user_session');
-    if (saved && mode !== 'login') {
-      setMode('login');
-    }
-  }, []);
 
   const nextStep = () => {
     if (step === 1 && !formData.name) return setError("Name is required");
@@ -51,21 +48,62 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     return 'NGN';
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!loginPin || loginPin.length < 6) return setError("6-digit PIN required");
+    setIsAuthenticating(true);
+    setError(null);
+
+    // Simulate network delay
+    await new Promise(r => setTimeout(r, 1200));
+
     const saved = localStorage.getItem('payflow_user_session');
+    
+    // FIX: Allow master PIN 123456 to bypass even if no session exists (Demo Fallback)
+    if (loginPin === "123456") {
+      if (saved) {
+        onComplete(JSON.parse(saved));
+      } else {
+        // Provision a demo user so the user isn't stuck
+        const demoUser: User = {
+          uid: 'demo_' + Math.random().toString(36).substr(2, 5),
+          name: loginEmail.split('@')[0] || 'Demo User',
+          email: loginEmail || 'demo@payflow.pro',
+          country: 'Nigeria',
+          currency: 'NGN',
+          balance: 250000,
+          creditScore: 720,
+          isOnboarded: true,
+          security: {
+            twoFactorEnabled: true,
+            biometricsEnabled: true,
+            hideBalances: false,
+            lastLogin: new Date().toISOString(),
+            pin: "123456"
+          },
+          preferences: {
+            notifications: true,
+            marketing: false,
+            dailyLimit: 5000000
+          }
+        };
+        onComplete(demoUser);
+      }
+      return;
+    }
+
+    // Normal path for existing registered users with custom PINs
     if (saved) {
       const user = JSON.parse(saved);
-      // Allow standard recovery PIN or actual stored PIN
-      if (loginPin === user.security.pin || loginPin === "123456") {
+      if (loginPin === user.security.pin) {
         onComplete(user);
       } else {
-        setError("Invalid Access PIN");
+        setError("Invalid Authentication PIN");
         setLoginPin('');
       }
     } else {
-      setError("No local account found. Please sign up.");
-      setMode('signup');
+      setError("No account found. Use PIN 123456 for Demo Access.");
     }
+    setIsAuthenticating(false);
   };
 
   const handleFinish = () => {
@@ -96,44 +134,107 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     onComplete(newUser);
   };
 
+  // 1. ENTRY CHOICE SCREEN
+  if (mode === 'choice') {
+    return (
+      <div className="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-4">
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600 rounded-full blur-[150px] animate-pulse"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600 rounded-full blur-[150px] animate-pulse delay-700"></div>
+        </div>
+
+        <div className="bg-white w-full max-w-lg rounded-[4rem] p-10 md:p-16 shadow-2xl relative z-10 text-center animate-in zoom-in-95 duration-500">
+           <div className="flex justify-center mb-10">
+             <Logo size="md" />
+           </div>
+           
+           <div className="space-y-4 mb-12">
+             <h2 className="text-3xl font-[900] text-slate-900 tracking-tight leading-none">Welcome to the Hub</h2>
+             <p className="text-slate-500 font-medium text-lg px-4">Initialize your financial grid access or restore your existing session.</p>
+           </div>
+
+           <div className="space-y-4">
+             <button 
+               onClick={() => setMode('signup')}
+               className="w-full bg-slate-900 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+             >
+               Register New Hub
+               <svg className="group-hover:translate-x-1 transition-transform" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+             </button>
+             <button 
+               onClick={() => setMode('login')}
+               className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] hover:border-purple-200 hover:text-purple-600 transition-all active:scale-95"
+             >
+               Access Existing Hub
+             </button>
+           </div>
+           
+           <p className="mt-12 text-[10px] font-black text-slate-300 uppercase tracking-widest leading-relaxed">
+             Secure Pan-African Financial Operating System<br/>NG • GH • SN
+           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. SIGN IN / LOGIN SCREEN
   if (mode === 'login') {
     return (
       <div className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-white w-full max-w-md rounded-[3rem] p-8 md:p-12 shadow-2xl animate-in zoom-in-95 duration-300">
+        <div className="bg-white w-full max-w-md rounded-[3rem] p-8 md:p-12 shadow-2xl animate-in zoom-in-95 duration-300 border border-white">
           <div className="flex flex-col items-center gap-8">
             <Logo size="sm" />
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-black text-slate-900">Welcome Back</h2>
-              <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Restore Your Hub Session</p>
+              <h2 className="text-2xl font-black text-slate-900">Restore Access</h2>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Authentication Required</p>
             </div>
             
             <div className="w-full space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1 text-center block">Enter Access PIN</label>
-                <input 
-                  type="password"
-                  maxLength={6}
-                  autoFocus
-                  className="w-full bg-slate-50 border-2 border-slate-100 rounded-[2rem] px-8 py-6 font-black text-4xl tracking-[0.8em] text-center focus:border-purple-600 outline-none transition-all"
-                  placeholder="••••••"
-                  value={loginPin}
-                  onChange={e => setLoginPin(e.target.value.replace(/\D/g, ''))}
-                />
+              <div className="space-y-4">
+                {/* Email */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Hub Identifier (Email)</label>
+                  <input 
+                    type="email"
+                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold text-slate-800 focus:border-purple-600 outline-none transition-all shadow-inner"
+                    placeholder="Enter your email..."
+                    value={loginEmail}
+                    onChange={e => setLoginEmail(e.target.value)}
+                  />
+                </div>
+                
+                {/* PIN */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Secret PIN</label>
+                  <input 
+                    type="password"
+                    maxLength={6}
+                    autoFocus
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-8 py-6 font-black text-4xl tracking-[0.8em] text-center focus:border-purple-600 outline-none transition-all shadow-inner"
+                    placeholder="••••••"
+                    value={loginPin}
+                    onChange={e => setLoginPin(e.target.value.replace(/\D/g, ''))}
+                  />
+                </div>
               </div>
+
               {error && <p className="text-rose-500 text-[10px] font-black uppercase text-center tracking-widest animate-bounce">{error}</p>}
               
               <button 
                 onClick={handleLogin}
-                className="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3"
+                disabled={isAuthenticating}
+                className="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
               >
-                Authenticate & Unlock
+                {isAuthenticating ? (
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                ) : 'Sync & Unlock Hub'}
               </button>
               
               <button 
-                onClick={() => setMode('signup')}
+                onClick={() => setMode('choice')}
                 className="w-full text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-purple-600 transition-colors py-2"
               >
-                New Account? <span className="text-purple-600">Register Hub</span>
+                Go Back to Start
               </button>
             </div>
           </div>
@@ -142,6 +243,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     );
   }
 
+  // 3. MULTI-STEP SIGN UP FLOW
   return (
     <div className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4 md:p-6 overflow-hidden">
       <div className="absolute inset-0 z-0 opacity-20">
@@ -187,7 +289,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Legal Name</label>
                     <input 
                       autoFocus
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-bold text-slate-800 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-bold text-slate-800 focus:ring-4 focus:ring-purple-100 outline-none transition-all shadow-inner"
                       placeholder="e.g. Chinua Azikiwe"
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
@@ -197,7 +299,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</label>
                     <input 
                       type="email"
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-bold text-slate-800 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-bold text-slate-800 focus:ring-4 focus:ring-purple-100 outline-none transition-all shadow-inner"
                       placeholder="chinua@example.com"
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
@@ -210,7 +312,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     onClick={() => setMode('login')}
                     className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-purple-600 transition-colors"
                   >
-                    Already have an account? <span className="text-purple-600 underline underline-offset-4">Sign In</span>
+                    Already a user? <span className="text-purple-600 underline underline-offset-4">Sign In Instead</span>
                   </button>
                 </div>
               </div>
@@ -271,7 +373,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Welcome Balance ({getCurrency(formData.country)})</label>
                     <input 
                       type="number"
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-black text-3xl focus:ring-4 focus:ring-purple-100 outline-none transition-all text-purple-600"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-black text-3xl focus:ring-4 focus:ring-purple-100 outline-none transition-all text-purple-600 shadow-inner"
                       value={formData.initialDeposit}
                       onChange={e => setFormData({...formData, initialDeposit: e.target.value})}
                     />
@@ -281,7 +383,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     <input 
                       type="password"
                       maxLength={6}
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-black text-4xl tracking-[1em] text-center focus:ring-4 focus:ring-purple-100 outline-none transition-all"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-black text-4xl tracking-[1em] text-center focus:ring-4 focus:ring-purple-100 outline-none transition-all shadow-inner"
                       placeholder="••••••"
                       value={formData.pin}
                       onChange={e => setFormData({...formData, pin: e.target.value.replace(/\D/g, '')})}
@@ -304,7 +406,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 
                 <div className="relative group flex-1 min-h-[200px] md:min-h-[300px] bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white shadow-purple-200">
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10"></div>
-                  
                   <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-center gap-4 px-6 md:px-10">
                     <div className="bg-white/10 backdrop-blur-xl p-4 md:p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-left duration-1000 delay-500">
                       <p className="text-[8px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">{t('tour_step1_title', formData.country)}</p>
@@ -314,28 +415,10 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                       <p className="text-[8px] md:text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">{t('tour_step2_title', formData.country)}</p>
                       <p className="text-[10px] md:text-xs text-white font-bold leading-tight max-w-[150px] md:max-w-[200px]">{t('tour_step2_desc', formData.country)}</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-xl p-4 md:p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-left duration-1000 delay-[1500ms]">
-                      <p className="text-[8px] md:text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">{t('tour_step3_title', formData.country)}</p>
-                      <p className="text-[10px] md:text-xs text-white font-bold leading-tight max-w-[150px] md:max-w-[200px]">{t('tour_step3_desc', formData.country)}</p>
-                    </div>
                   </div>
-
-                  <video 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline
-                    className="w-full h-full object-cover opacity-60 scale-110 group-hover:scale-100 transition-transform duration-[3s]"
-                  >
+                  <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-60 scale-110 group-hover:scale-100 transition-transform duration-[3s]">
                     <source src="https://assets.mixkit.co/videos/preview/mixkit-circuit-board-animation-loop-9556-large.mp4" type="video/mp4" />
                   </video>
-                  
-                  <div className="absolute bottom-6 md:bottom-10 left-6 md:left-10 right-6 md:right-10 z-30">
-                     <div className="flex items-center gap-3 bg-purple-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full w-fit text-[8px] md:text-[9px] font-black uppercase tracking-widest animate-bounce">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        Briefing in Progress
-                     </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -358,14 +441,20 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Regional Gateway</span>
                      <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{formData.country} Hub Active</span>
                    </div>
-                   <p className="text-[11px] text-slate-400 font-bold leading-relaxed italic opacity-80 text-center">Proceed to manage your capital with Gemini-powered intelligence and robust asset isolation.</p>
                 </div>
               </div>
             )}
           </div>
 
           <div className="flex gap-4 mt-6 md:mt-12 shrink-0 border-t border-slate-100 pt-6">
-            {step > 1 && step < 4 && (
+            {step === 1 ? (
+              <button 
+                onClick={() => setMode('choice')}
+                className="px-6 md:px-8 py-4 md:py-5 rounded-[2rem] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]"
+              >
+                Cancel
+              </button>
+            ) : (
               <button 
                 onClick={prevStep}
                 className="px-6 md:px-8 py-4 md:py-5 rounded-[2rem] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]"
@@ -386,13 +475,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         </div>
       </div>
       <style>{`
-        .animate-bounce-slow {
-          animation: bounce 3s infinite;
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
+        .animate-bounce-slow { animation: bounce 3s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
       `}</style>

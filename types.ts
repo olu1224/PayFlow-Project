@@ -35,6 +35,7 @@ export interface Transaction {
   amount: number;
   date: string;
   status: 'completed' | 'pending' | 'failed';
+  method?: string; // Tracks 'card', 'transfer', etc.
 }
 
 export interface RecurringPayment {
