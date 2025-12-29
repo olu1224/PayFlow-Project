@@ -17,8 +17,12 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
   
+  // Persistent Cache - Remembers the email and name across browser sessions
+  const [rememberedEmail, setRememberedEmail] = useState(() => localStorage.getItem('payflow_remembered_email') || '');
+  const [rememberedName, setRememberedName] = useState(() => localStorage.getItem('payflow_remembered_name') || '');
+
   // Login State
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginEmail, setLoginEmail] = useState(rememberedEmail);
   const [loginPin, setLoginPin] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   
@@ -53,17 +57,21 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     setIsAuthenticating(true);
     setError(null);
 
+    // Persist email identifier for future sessions
+    localStorage.setItem('payflow_remembered_email', loginEmail);
+
     // Simulate network delay
     await new Promise(r => setTimeout(r, 1200));
 
     const saved = localStorage.getItem('payflow_user_session');
     
-    // FIX: Allow master PIN 123456 to bypass even if no session exists (Demo Fallback)
+    // Demo Fallback / PIN Logic
     if (loginPin === "123456") {
       if (saved) {
-        onComplete(JSON.parse(saved));
+        const user = JSON.parse(saved);
+        localStorage.setItem('payflow_remembered_name', user.name);
+        onComplete(user);
       } else {
-        // Provision a demo user so the user isn't stuck
         const demoUser: User = {
           uid: 'demo_' + Math.random().toString(36).substr(2, 5),
           name: loginEmail.split('@')[0] || 'Demo User',
@@ -86,15 +94,16 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             dailyLimit: 5000000
           }
         };
+        localStorage.setItem('payflow_remembered_name', demoUser.name);
         onComplete(demoUser);
       }
       return;
     }
 
-    // Normal path for existing registered users with custom PINs
     if (saved) {
       const user = JSON.parse(saved);
       if (loginPin === user.security.pin) {
+        localStorage.setItem('payflow_remembered_name', user.name);
         onComplete(user);
       } else {
         setError("Invalid Authentication PIN");
@@ -107,6 +116,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   const handleFinish = () => {
+    localStorage.setItem('payflow_remembered_email', formData.email);
+    localStorage.setItem('payflow_remembered_name', formData.name);
+
     const uid = 'usr_' + Math.random().toString(36).substr(2, 9);
     const newUser: User = {
       uid,
@@ -134,7 +146,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     onComplete(newUser);
   };
 
-  // 1. ENTRY CHOICE SCREEN
+  // 1. ENTRY CHOICE SCREEN - SMART REMEMBERED VIEW
   if (mode === 'choice') {
     return (
       <div className="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-4">
@@ -149,24 +161,50 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
            </div>
            
            <div className="space-y-4 mb-12">
-             <h2 className="text-3xl font-[900] text-slate-900 tracking-tight leading-none">Welcome to the Hub</h2>
-             <p className="text-slate-500 font-medium text-lg px-4">Initialize your financial grid access or restore your existing session.</p>
+             <h2 className="text-3xl font-[900] text-slate-900 tracking-tight leading-none">
+               {rememberedEmail ? 'Welcome back' : 'Welcome to the Hub'}
+             </h2>
+             <p className="text-slate-500 font-medium text-lg px-4">
+               {rememberedEmail 
+                 ? 'Your identity is recognized. Continue to unlock your hub.' 
+                 : 'Initialize your financial grid access or restore your existing session.'}
+             </p>
            </div>
 
            <div className="space-y-4">
-             <button 
-               onClick={() => setMode('signup')}
-               className="w-full bg-slate-900 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 active:scale-95 group"
-             >
-               Register New Hub
-               <svg className="group-hover:translate-x-1 transition-transform" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-             </button>
-             <button 
-               onClick={() => setMode('login')}
-               className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] hover:border-purple-200 hover:text-purple-600 transition-all active:scale-95"
-             >
-               Access Existing Hub
-             </button>
+             {rememberedEmail ? (
+               <>
+                 <button 
+                   onClick={() => { setLoginEmail(rememberedEmail); setMode('login'); }}
+                   className="w-full bg-slate-900 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-purple-600 transition-all flex flex-col items-center justify-center gap-1 active:scale-95 group"
+                 >
+                   <span className="opacity-60 text-[9px]">CONTINUE AS</span>
+                   <span className="text-sm font-black">{rememberedName || rememberedEmail.split('@')[0]}</span>
+                 </button>
+                 <button 
+                   onClick={() => { setRememberedEmail(''); setMode('login'); setLoginEmail(''); }}
+                   className="w-full text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-purple-600 transition-colors py-2"
+                 >
+                   Sign in with a different account
+                 </button>
+               </>
+             ) : (
+               <>
+                 <button 
+                   onClick={() => setMode('signup')}
+                   className="w-full bg-slate-900 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                 >
+                   Register New Hub
+                   <svg className="group-hover:translate-x-1 transition-transform" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                 </button>
+                 <button 
+                   onClick={() => setMode('login')}
+                   className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] hover:border-purple-200 hover:text-purple-600 transition-all active:scale-95"
+                 >
+                   Access Existing Hub
+                 </button>
+               </>
+             )}
            </div>
            
            <p className="mt-12 text-[10px] font-black text-slate-300 uppercase tracking-widest leading-relaxed">
@@ -191,7 +229,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             
             <div className="w-full space-y-6">
               <div className="space-y-4">
-                {/* Email */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Hub Identifier (Email)</label>
                   <input 
@@ -203,13 +240,12 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   />
                 </div>
                 
-                {/* PIN */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Secret PIN</label>
                   <input 
                     type="password"
                     maxLength={6}
-                    autoFocus
+                    autoFocus={!!loginEmail}
                     className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-8 py-6 font-black text-4xl tracking-[0.8em] text-center focus:border-purple-600 outline-none transition-all shadow-inner"
                     placeholder="••••••"
                     value={loginPin}

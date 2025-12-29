@@ -5,9 +5,10 @@ import { User, Country, Currency } from '../types';
 interface SettingsProps {
   user: User;
   onUpdateCountry: (c: Country) => void;
+  onUpdateSecurity: (updates: Partial<User['security']>) => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ user, onUpdateCountry }) => {
+const Settings: React.FC<SettingsProps> = ({ user, onUpdateCountry, onUpdateSecurity }) => {
   const [activeSubTab, setActiveSubTab] = useState<'profile' | 'security' | 'preferences'>('profile');
 
   const SectionTitle = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
@@ -85,9 +86,24 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateCountry }) => {
               desc="Configure high-level security protocols for regional settlements."
             />
             <div className="space-y-6">
-              <SecurityToggle label="Biometric Vault Lock" desc="Use biometric sensors for all fund movement." active={user.security.biometricsEnabled} />
-              <SecurityToggle label="Advanced 2FA Grid" desc="Multi-factor authentication via encrypted push nodes." active={user.security.twoFactorEnabled} />
-              <SecurityToggle label="Stealth Mode" desc="Automatically mask all dashboard balances." active={user.security.hideBalances} />
+              <SecurityToggle 
+                label="Biometric Vault Lock" 
+                desc="Use biometric sensors for all fund movement." 
+                active={user.security.biometricsEnabled} 
+                onToggle={() => onUpdateSecurity({ biometricsEnabled: !user.security.biometricsEnabled })}
+              />
+              <SecurityToggle 
+                label="Advanced 2FA Grid" 
+                desc="Multi-factor authentication via encrypted push nodes." 
+                active={user.security.twoFactorEnabled} 
+                onToggle={() => onUpdateSecurity({ twoFactorEnabled: !user.security.twoFactorEnabled })}
+              />
+              <SecurityToggle 
+                label="Stealth Mode" 
+                desc="Automatically mask all dashboard balances." 
+                active={user.security.hideBalances} 
+                onToggle={() => onUpdateSecurity({ hideBalances: !user.security.hideBalances })}
+              />
             </div>
           </div>
         )}
@@ -100,8 +116,8 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateCountry }) => {
               desc="How PayFlow interacts with your daily workflow."
             />
             <div className="space-y-6">
-              <SecurityToggle label="Push Command Alerts" desc="Real-time notifications for ledger updates." active={user.preferences.notifications} />
-              <SecurityToggle label="Market Intelligence" desc="Daily regional trading signals and utility updates." active={true} />
+              <SecurityToggle label="Push Command Alerts" desc="Real-time notifications for ledger updates." active={true} onToggle={() => {}} />
+              <SecurityToggle label="Market Intelligence" desc="Daily regional trading signals and utility updates." active={true} onToggle={() => {}} />
             </div>
           </div>
         )}
@@ -110,13 +126,16 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateCountry }) => {
   );
 };
 
-const SecurityToggle = ({ label, desc, active }: { label: string, desc: string, active: boolean }) => (
+const SecurityToggle = ({ label, desc, active, onToggle }: { label: string, desc: string, active: boolean, onToggle: () => void }) => (
   <div className="flex items-center justify-between p-8 bg-white rounded-[3rem] border border-slate-100 hover:border-purple-200 transition-all shadow-sm">
     <div className="space-y-2">
       <p className="font-[900] text-slate-900 text-lg tracking-tight leading-none">{label}</p>
       <p className="text-xs text-slate-500 font-bold max-w-sm opacity-80">{desc}</p>
     </div>
-    <button className={`w-16 h-8 rounded-full transition-all relative shrink-0 ${active ? 'bg-purple-600 shadow-xl' : 'bg-slate-200'}`}>
+    <button 
+      onClick={onToggle}
+      className={`w-16 h-8 rounded-full transition-all relative shrink-0 ${active ? 'bg-purple-600 shadow-xl' : 'bg-slate-200'}`}
+    >
       <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md ${active ? 'right-1' : 'left-1'}`} />
     </button>
   </div>

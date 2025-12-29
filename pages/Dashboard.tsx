@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Transaction } from '../types';
 import ServiceModal from '../components/ServiceModal';
 import DepositModal from '../components/DepositModal';
 import WithdrawModal from '../components/WithdrawModal';
 import ReceiveModal from '../components/ReceiveModal';
 import { ICONS } from '../constants';
+import { t } from '../localization';
 
 type FeatureKey = 'bills' | 'transfer' | 'savings' | 'crypto' | 'business' | 'nearby';
 
@@ -18,19 +19,27 @@ interface DashboardProps {
   onExplorePlanning: () => void; 
   onNearbyClick: () => void;
   onTabChange: (tab: string) => void;
+  onUpdateSecurity: (updates: Partial<User['security']>) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransaction, onDeposit, onWithdraw, onExplorePlanning, onNearbyClick, onTabChange }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransaction, onDeposit, onWithdraw, onExplorePlanning, onNearbyClick, onTabChange, onUpdateSecurity }) => {
   const [activeFeature, setActiveFeature] = useState<FeatureKey>('bills');
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isReceiveOpen, setIsReceiveOpen] = useState(false);
-  const [privacyMode, setPrivacyMode] = useState(user.security.hideBalances);
+  const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting(t('greeting_morning', user.country));
+    else if (hour < 17) setGreeting(t('greeting_afternoon', user.country));
+    else setGreeting(t('greeting_evening', user.country));
+  }, [user.country]);
 
   const currencySymbol = user.currency === 'NGN' ? '₦' : user.currency === 'GHS' ? 'GH₵' : 'CFA';
-  const formatBalance = (val: number) => privacyMode ? '••••••' : val.toLocaleString();
+  const formatBalance = (val: number) => user.security.hideBalances ? '••••••' : val.toLocaleString();
 
   const featureConfigs: Record<FeatureKey, { 
     title: string, 
@@ -41,149 +50,149 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
     image: string 
   }> = {
     bills: { 
-      title: 'Easy Utility Payments', 
+      title: t('feat_bills_title', user.country), 
       color: 'bg-amber-500', 
-      action: 'PAY NOW', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>, 
-      detail: "Instantly pay for electricity, water, and internet subscriptions with a single tap.",
-      image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&q=80&w=1200" // Person paying on phone
+      action: t('feat_bills_action', user.country), 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>, 
+      detail: t('feat_bills_detail', user.country),
+      image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&q=80&w=1200"
     },
     transfer: { 
-      title: 'Send Money Instantly', 
+      title: t('feat_transfer_title', user.country), 
       color: 'bg-emerald-500', 
-      action: 'INITIATE SEND', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m18 8-4-4-4 4"/><path d="M14 4v12a4 4 0 0 1-4 4H4"/></svg>, 
-      detail: "Move money between accounts in Nigeria, Ghana, and Senegal on private regional rails.",
-      image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1200" // Digital banking visual
+      action: t('feat_transfer_action', user.country), 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="m18 8-4-4-4 4"/><path d="M14 4v12a4 4 0 0 1-4 4H4"/></svg>, 
+      detail: t('feat_transfer_detail', user.country),
+      image: "https://images.unsplash.com/photo-1556740714-a8395b3bf30f?auto=format&fit=crop&q=80&w=1200"
     },
     savings: { 
-      title: 'Save While You Spend', 
+      title: t('feat_savings_title', user.country), 
       color: 'bg-purple-600', 
-      action: 'VIEW GOALS', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 
-      detail: "AI-driven goals that help you build wealth automatically from your daily transactions.",
-      image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=1200" // Growth visual
+      action: t('feat_savings_action', user.country), 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 
+      detail: t('feat_savings_detail', user.country),
+      image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=1200"
     },
     crypto: { 
-      title: 'Trade Digital Assets', 
+      title: t('feat_crypto_title', user.country), 
       color: 'bg-blue-500', 
-      action: 'TRADE HUB', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>, 
-      detail: "Buy, sell, and withdraw crypto assets using your native local currency balance.",
-      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=1200" // Digital currency
+      action: t('feat_crypto_action', user.country), 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>, 
+      detail: t('feat_crypto_detail', user.country),
+      image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&q=80&w=1200"
     },
     business: { 
-      title: 'Merchant Terminal', 
+      title: t('feat_business_title', user.country), 
       color: 'bg-indigo-600', 
-      action: 'BUSINESS HUB', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M3 10h18"/></svg>, 
-      detail: "Professional tools for payroll and automated invoicing for African entrepreneurs.",
-      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1200" // Business dashboard visual
+      action: t('feat_business_action', user.country), 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M3 10h18"/></svg>, 
+      detail: t('feat_business_detail', user.country),
+      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1200"
     },
     nearby: { 
-      title: 'Infrastructure Locator', 
+      title: t('feat_nearby_title', user.country), 
       color: 'bg-rose-500', 
-      action: 'FIND AGENTS', 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>, 
-      detail: "Locate verified agents and commercial banks near you using active Google Maps grounding.",
-      image: "https://images.unsplash.com/photo-1569336415962-a4bd9f67c07a?auto=format&fit=crop&q=80&w=1200" // Map / City
+      action: t('feat_nearby_action', user.country), 
+      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>, 
+      detail: t('feat_nearby_detail', user.country),
+      image: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1200"
     }
   };
 
+  const gridItems = [
+    { id: 'Electricity', label: t('grid_electricity', user.country), icon: ICONS.Electricity, color: 'bg-amber-100 text-amber-600', detail: t('grid_desc_electricity', user.country) },
+    { id: 'Internet', label: t('grid_internet', user.country), icon: ICONS.Data, color: 'bg-blue-100 text-blue-600', detail: t('grid_desc_internet', user.country) },
+    { id: 'TV', label: t('grid_tv', user.country), icon: ICONS.TV, color: 'bg-purple-100 text-purple-600', detail: t('grid_desc_tv', user.country) },
+    { id: 'Food', label: t('grid_food', user.country), icon: ICONS.Food, color: 'bg-orange-100 text-orange-600', detail: t('grid_desc_food', user.country) },
+    { id: 'Transfer', label: t('grid_transfer', user.country), icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>, color: 'bg-teal-100 text-teal-600', detail: t('grid_desc_transfer', user.country) },
+    { id: 'Airtime', label: t('grid_airtime', user.country), icon: ICONS.Airtime, color: 'bg-rose-100 text-rose-600', detail: t('grid_desc_airtime', user.country) },
+    { id: 'Betting', label: t('grid_betting', user.country), icon: ICONS.Betting, color: 'bg-emerald-100 text-emerald-600', detail: t('grid_desc_betting', user.country) },
+    { id: 'Transport', label: t('grid_transport', user.country), icon: ICONS.Transport, color: 'bg-indigo-100 text-indigo-600', detail: t('grid_desc_transport', user.country) },
+    { id: 'Groceries', label: t('grid_groceries', user.country), icon: ICONS.Groceries, color: 'bg-cyan-100 text-cyan-600', detail: t('grid_desc_groceries', user.country) },
+    { id: 'Gov Services', label: t('grid_gov', user.country), icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, color: 'bg-slate-100 text-slate-600', detail: t('grid_desc_gov', user.country) }
+  ];
+
   const handleAction = () => {
-    if (activeFeature === 'bills') {
-      setShowCategoryPicker(true);
-    } else if (activeFeature === 'transfer') {
-      setSelectedService('Transfer');
-    } else if (activeFeature === 'savings') {
-      onExplorePlanning();
-    } else if (activeFeature === 'crypto') {
-      onTabChange('crypto');
-    } else if (activeFeature === 'business') {
-      onTabChange('b2b');
-    } else if (activeFeature === 'nearby') {
-      onNearbyClick();
-    }
+    if (activeFeature === 'bills') setShowCategoryPicker(true);
+    else if (activeFeature === 'transfer') setSelectedService('Transfer');
+    else if (activeFeature === 'savings') onExplorePlanning();
+    else if (activeFeature === 'crypto') onTabChange('crypto');
+    else if (activeFeature === 'business') onTabChange('b2b');
+    else if (activeFeature === 'nearby') onNearbyClick();
+  };
+
+  const toggleStealth = () => {
+    onUpdateSecurity({ hideBalances: !user.security.hideBalances });
   };
 
   return (
-    <div className="space-y-10 max-w-[1600px] mx-auto pb-24 animate-in fade-in duration-700 px-2 md:px-8">
-      {/* Header Area */}
-      <header className="flex flex-col md:flex-row items-center justify-between gap-6 py-4">
-        <div className="text-center md:text-left">
-          <div className="flex items-center justify-center md:justify-start gap-4">
-            <h1 className="text-3xl md:text-5xl font-[900] text-slate-900 tracking-tighter leading-none">
-              Hello, {user.name.split(' ')[0]}
-            </h1>
-            <span className="text-3xl md:text-5xl">👋</span>
-          </div>
-          <p className="text-slate-400 font-bold text-[10px] md:text-sm uppercase tracking-[0.2em] mt-3">Welcome to your Pan-African Hub</p>
-        </div>
-        
-        <div className="flex items-center gap-3 bg-white p-2 rounded-[2rem] shadow-xl border border-slate-50">
-          <button onClick={() => setPrivacyMode(!privacyMode)} className={`p-4 rounded-[1.4rem] transition-all ${privacyMode ? 'bg-purple-600 text-white shadow-xl shadow-purple-200' : 'bg-slate-50 text-slate-400'}`}>
-            {privacyMode ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9.88 9.88L14.12 14.12"/><path d="M2 2L22 22"/><path d="M10.37 5.07a12.8 12.8 0 0 1 1.63-.07 12 12 0 0 1 9.39 4.66 2 2 0 0 1 0 2.54 11.23 11.23 0 0 1-2.07 2"/></svg> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>}
-          </button>
-          <button onClick={() => setIsDepositOpen(true)} className="px-10 py-4 bg-slate-900 text-white rounded-[1.4rem] font-black text-xs uppercase tracking-widest hover:bg-purple-600 transition-all shadow-xl shadow-slate-200 active:scale-95">Add Money</button>
-        </div>
-      </header>
-
-      {/* RECREATED FEATURE SPOTLIGHT WITH HIGH FIDELITY ASSETS */}
-      <section className="bg-white rounded-[3rem] p-1 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-slate-50 overflow-hidden group">
-        <div className="flex flex-col lg:flex-row min-h-[420px]">
-          {/* Left Block: Image Viewport */}
-          <div className="lg:w-[45%] relative overflow-hidden shrink-0 min-h-[300px]">
+    <div className="space-y-12 max-w-[1600px] mx-auto pb-32 animate-in fade-in duration-1000 px-4 sm:px-12">
+      
+      {/* Welcome Widget: The Hub Command Center */}
+      <section className="bg-white rounded-[3rem] md:rounded-[4rem] p-1 shadow-[0_30px_80px_-10px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden mt-8">
+        <div className="flex flex-col lg:flex-row min-h-[500px] md:min-h-[600px]">
+          
+          {/* Left: Interactive Visual Header */}
+          <div className="lg:w-[45%] relative overflow-hidden shrink-0 h-[300px] md:h-[400px] lg:h-auto">
              <img 
                key={activeFeature}
                src={featureConfigs[activeFeature].image} 
                alt={activeFeature} 
-               className="absolute inset-0 w-full h-full object-cover animate-in fade-in zoom-in-110 duration-1000 grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
+               className="absolute inset-0 w-full h-full object-cover animate-in fade-in zoom-in-105 duration-[2s] saturate-[0.8] brightness-[0.7]"
              />
-             <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/80 via-slate-900/20 to-transparent"></div>
+             <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-transparent"></div>
              
-             {/* Text Overlay */}
-             <div className="absolute bottom-10 left-10 right-10 z-10">
-                <h2 className="text-4xl md:text-5xl font-[900] text-white tracking-[0.15em] italic uppercase drop-shadow-2xl">PAYFLOW_PRO</h2>
-                <div className="flex gap-2.5 justify-start mt-8 p-2 bg-white/10 rounded-full w-fit border border-white/10 backdrop-blur-md">
-                   {(['bills', 'transfer', 'savings', 'crypto', 'business', 'nearby'] as const).map(dot => (
-                     <div key={dot} className={`w-2 h-2 rounded-full transition-all duration-700 ${activeFeature === dot ? 'bg-white scale-125 shadow-[0_0_12px_white]' : 'bg-white/20'}`}></div>
-                   ))}
+             <div className="absolute inset-0 p-10 md:p-14 flex flex-col justify-between">
+                <div className="space-y-4">
+                   <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xl px-4 py-1.5 rounded-full border border-white/20">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="text-[9px] font-black text-white uppercase tracking-[0.3em]">{user.country} Direct Terminal</span>
+                   </div>
+                   <h2 className="text-4xl md:text-6xl font-[1000] text-white tracking-tight leading-none">
+                     {greeting},<br/>{user.name.split(' ')[0]}<span className="text-purple-400">.</span>
+                   </h2>
+                </div>
+                
+                <div className="flex flex-col gap-4">
+                   <div className="bg-white/10 backdrop-blur-2xl p-6 rounded-[2rem] border border-white/20 w-fit">
+                      <p className="text-[9px] font-black text-purple-300 uppercase tracking-widest mb-1">Live Intelligence</p>
+                      <p className="text-white text-xs font-bold leading-tight max-w-[200px]">Utility nodes are 100% active in your region. Settlement latency: &lt;2s.</p>
+                   </div>
                 </div>
              </div>
           </div>
 
-          {/* Right Block: Interactive Content */}
-          <div className="flex-1 p-10 md:p-16 flex flex-col justify-center relative bg-white">
-            <div className="max-w-xl space-y-8">
+          {/* Right: Interaction Terminal */}
+          <div className="flex-1 p-8 md:p-16 flex flex-col justify-center bg-white">
+            <div className="max-w-3xl space-y-10">
               <div className="flex items-center gap-6">
-                 <div className={`w-16 h-16 ${featureConfigs[activeFeature].color} rounded-2xl flex items-center justify-center text-white shadow-2xl transition-all duration-500 shrink-0`}>
+                 <div className={`w-16 h-16 md:w-20 md:h-20 ${featureConfigs[activeFeature].color} rounded-[2rem] flex items-center justify-center text-white shadow-2xl transition-all duration-500 ring-8 ring-slate-50`}>
                     {featureConfigs[activeFeature].icon}
                  </div>
                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-purple-600 uppercase tracking-[0.5em] opacity-80">SMART FEATURE SPOTLIGHT</p>
-                    <h3 className="text-3xl md:text-5xl font-[900] text-slate-900 tracking-tighter leading-none">{featureConfigs[activeFeature].title}</h3>
+                    <p className="text-[10px] font-black text-purple-700 uppercase tracking-[0.4em]">PRO TERMINAL</p>
+                    <h3 className="text-3xl md:text-5xl font-[1000] text-black tracking-tight leading-none">{featureConfigs[activeFeature].title}</h3>
                  </div>
               </div>
               
-              <p className="text-base md:text-xl text-slate-500 font-medium leading-relaxed">
+              <p className="text-base md:text-xl text-black font-bold leading-relaxed max-w-xl opacity-70">
                 {featureConfigs[activeFeature].detail}
               </p>
 
-              <div className="flex flex-col xl:flex-row items-center gap-6 pt-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 pt-4">
                  <button 
                    onClick={handleAction}
-                   className="w-full xl:w-auto px-14 py-6 bg-slate-950 text-white rounded-[1.6rem] font-[900] text-[11px] tracking-[0.25em] shadow-2xl hover:bg-purple-600 hover:scale-105 transition-all active:scale-95 whitespace-nowrap"
+                   className="px-12 py-6 bg-black text-white rounded-[1.8rem] font-[1000] text-[12px] uppercase tracking-[0.3em] shadow-2xl hover:bg-purple-600 hover:scale-[1.03] transition-all active:scale-95 whitespace-nowrap"
                  >
                    {featureConfigs[activeFeature].action}
                  </button>
                  
-                 {/* Filter Pills */}
-                 <div className="flex gap-1.5 p-1.5 bg-slate-50 rounded-[1.8rem] border border-slate-100 overflow-x-auto no-scrollbar max-w-full">
+                 <div className="flex gap-2.5 p-2 bg-slate-50 rounded-full border border-slate-100 overflow-x-auto no-scrollbar scroll-smooth">
                     {(['bills', 'transfer', 'savings', 'crypto', 'business', 'nearby'] as const).map(key => (
                       <button 
                         key={key} 
                         onClick={() => setActiveFeature(key)}
-                        className={`px-6 py-3 rounded-[1.4rem] font-black text-[10px] uppercase tracking-widest transition-all shrink-0 ${activeFeature === key ? 'bg-white text-purple-600 shadow-md ring-1 ring-black/5' : 'text-slate-400 hover:text-slate-700'}`}
+                        className={`px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all shrink-0 ${activeFeature === key ? 'bg-white text-purple-700 shadow-xl ring-1 ring-black/5' : 'text-black hover:text-purple-600 opacity-60 hover:opacity-100'}`}
                       >
                         {key}
                       </button>
@@ -195,148 +204,116 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
         </div>
       </section>
 
-      {/* Main Grid: Balance & Universal Bill Payment Hub */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-8 space-y-10">
-          {/* Balance Hub */}
-          <div className="bg-slate-950 rounded-[4rem] p-12 md:p-16 text-white relative overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.4)] group">
-            <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-purple-600 rounded-full blur-[180px] opacity-20"></div>
-            <div className="relative z-10 flex flex-col md:flex-row justify-between items-center md:items-end gap-12">
-              <div className="space-y-4 text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-4">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
-                  <p className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.5em] text-slate-500">Live Grid Balance</p>
-                </div>
-                <h2 className="text-7xl md:text-9xl font-[900] text-white tracking-tighter flex items-baseline justify-center md:justify-start gap-5 leading-none transition-all duration-700 group-hover:scale-105 origin-left">
-                  <span className="text-3xl md:text-4xl font-black text-purple-500">{currencySymbol}</span>
-                  {formatBalance(user.balance)}
-                </h2>
-              </div>
-              <div className="flex gap-4 w-full md:w-auto">
-                <button onClick={() => setIsWithdrawOpen(true)} className="flex-1 md:w-44 bg-white/10 border border-white/10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest text-center transition-all hover:bg-white/20">Withdraw</button>
-                <button onClick={() => setIsReceiveOpen(true)} className="flex-1 md:w-44 bg-purple-600 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest text-center transition-all hover:bg-purple-700 shadow-2xl shadow-purple-500/20">Receive</button>
-              </div>
-            </div>
-          </div>
-
-          {/* COMPREHENSIVE BILL PAYMENT HUB (ALL SECTIONS) */}
-          <section className="bg-white p-10 md:p-14 rounded-[4rem] border border-slate-50 shadow-2xl shadow-slate-100/50">
-             <div className="flex items-center justify-between mb-12">
-                <div>
-                  <h3 className="text-3xl font-[900] text-slate-900 tracking-tight leading-none">Global Bill Hub</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Verified Regional Settlement Endpoints</p>
-                </div>
-                <button onClick={() => setShowCategoryPicker(true)} className="bg-slate-50 p-4 rounded-2xl text-slate-400 hover:text-purple-600 transition-all">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-             </div>
-             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-10">
-                {[
-                  { id: 'Electricity', label: 'Electricity', icon: ICONS.Electricity, color: 'bg-amber-100 text-amber-600', detail: 'EKEDC, ECG, Senelec' },
-                  { id: 'Internet', label: 'Internet', icon: ICONS.Data, color: 'bg-blue-100 text-blue-600', detail: 'MTN, Orange, Fiber' },
-                  { id: 'TV', label: 'Cable TV', icon: ICONS.TV, color: 'bg-purple-100 text-purple-600', detail: 'DSTV, Canal+, GOTV' },
-                  { id: 'Betting', label: 'Betting', icon: ICONS.Betting, color: 'bg-emerald-100 text-emerald-600', detail: 'Lottery & Wallets' },
-                  { id: 'Airtime', label: 'Airtime', icon: ICONS.Airtime, color: 'bg-teal-100 text-teal-600', detail: 'Instant Recharge' },
-                  { id: 'Food', label: 'Food Delivery', icon: ICONS.Food, color: 'bg-rose-100 text-rose-600', detail: 'Jumia, Glovo, Paps' },
-                  { id: 'Transport', label: 'Transport', icon: ICONS.Transport, color: 'bg-indigo-100 text-indigo-600', detail: 'Uber, TER, Bus' },
-                  { id: 'Groceries', label: 'Groceries', icon: ICONS.Groceries, color: 'bg-orange-100 text-orange-600', detail: 'Shoprite, Auchan' },
-                  { id: 'Gov Services', label: 'Gov Services', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, color: 'bg-slate-100 text-slate-600', detail: 'Taxes & Customs' },
-                  { id: 'Transfer', label: 'Send Money', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>, color: 'bg-emerald-100 text-emerald-600', detail: 'Local & Int\'l Send' }
-                ].map(item => (
-                  <button 
-                    key={item.id} 
-                    onClick={() => setSelectedService(item.id)}
-                    className="flex flex-col items-center gap-4 group transition-all"
-                  >
-                    <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center transition-all group-hover:scale-110 group-hover:-rotate-3 shadow-xl ${item.color}`}>
-                       {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement<any>, { width: 32, height: 32, strokeWidth: 3 }) : item.icon}
-                    </div>
-                    <div className="text-center space-y-1">
-                      <p className="text-[11px] font-black uppercase text-slate-800 tracking-widest group-hover:text-purple-600 transition-colors">{item.label}</p>
-                      <p className="text-[8px] font-bold text-slate-400 uppercase leading-none opacity-0 group-hover:opacity-100 transition-all">{item.detail}</p>
-                    </div>
-                  </button>
-                ))}
-             </div>
-          </section>
-        </div>
-
-        {/* Vertical Feed Sidebar */}
-        <div className="lg:col-span-4 space-y-10">
-           <div className="bg-white rounded-[3.5rem] border border-slate-50 shadow-2xl h-[780px] flex flex-col overflow-hidden">
-              <div className="p-10 border-b border-slate-50 shrink-0">
-                 <h3 className="text-2xl font-[900] text-slate-900 tracking-tight leading-none">Activity Feed</h3>
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Live Sync Active</p>
-              </div>
-              <div className="flex-1 overflow-auto p-4 custom-scrollbar">
-                {transactions.length > 0 ? transactions.map(tx => (
-                  <div key={tx.id} className="p-6 flex items-center justify-between rounded-[2rem] hover:bg-slate-50 transition-all group">
-                     <div className="flex items-center gap-5">
-                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${tx.type === 'credit' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
-                          {tx.type === 'credit' ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M7 7l10 10M17 7v10H7"/></svg> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M17 17L7 7M7 17V7h10"/></svg>}
-                       </div>
-                       <div className="min-w-0">
-                         <p className="font-black text-slate-800 text-sm truncate group-hover:text-purple-600 transition-colors">{tx.name}</p>
-                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">{tx.date}</p>
-                       </div>
-                     </div>
-                     <div className="text-right shrink-0 ml-4">
-                        <p className={`font-black text-base ${tx.type === 'credit' ? 'text-emerald-600' : 'text-slate-900'}`}>{tx.type === 'credit' ? '+' : '-'}{currencySymbol}{tx.amount.toLocaleString()}</p>
-                     </div>
-                  </div>
-                )) : (
-                  <div className="h-full flex flex-col items-center justify-center text-center opacity-30 grayscale gap-6 p-12">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-                    <p className="text-xs font-black uppercase tracking-widest">No activity found</p>
-                  </div>
+      {/* Vault Balance Display - Refined Proportion */}
+      <section className="bg-slate-950 rounded-[3rem] md:rounded-[4rem] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl group">
+        <div className="absolute top-[-30%] right-[-5%] w-[800px] h-[800px] bg-purple-600 rounded-full blur-[200px] opacity-30 group-hover:opacity-40 transition-all duration-[3s]"></div>
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-700 rounded-full blur-[150px] opacity-20 group-hover:opacity-30 transition-all duration-[3s]"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-12">
+          <div className="space-y-10 text-center md:text-left w-full md:w-auto">
+            <div className="flex items-center justify-center md:justify-start gap-4">
+              <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping shadow-[0_0_15px_#10b981]"></div>
+              <p className="text-[12px] font-black uppercase tracking-[0.5em] text-purple-400">{t('wallet_balance', user.country)}</p>
+              
+              <button 
+                onClick={toggleStealth}
+                className={`ml-4 px-5 py-2 rounded-full border-2 transition-all flex items-center gap-3 group/stealth ${user.security.hideBalances ? 'bg-purple-600 border-purple-400 text-white shadow-[0_0_30px_rgba(147,51,234,0.4)]' : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white'}`}
+              >
+                {user.security.hideBalances ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 )}
-              </div>
-              <div className="p-10 bg-slate-50/50 border-t border-slate-50">
-                 <button onClick={() => onTabChange('history')} className="w-full py-5 bg-white border border-slate-200 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.25em] text-slate-600 hover:text-purple-600 hover:border-purple-200 shadow-sm transition-all">View All Transactions</button>
-              </div>
-           </div>
-        </div>
-      </div>
-
-      {/* Protocol Picker Flow */}
-      {showCategoryPicker && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-2xl animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl rounded-[4rem] p-12 md:p-16 shadow-2xl animate-in zoom-in-95 border border-white">
-            <div className="flex justify-between items-center mb-12">
-              <div className="space-y-1">
-                <h2 className="text-3xl font-[900] text-slate-900 tracking-tight leading-none">Select Protocol</h2>
-                <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest">Global Marketplace Settlement</p>
-              </div>
-              <button onClick={() => setShowCategoryPicker(false)} className="p-4 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-[1.5rem] transition-all">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                <span className="text-[10px] font-black uppercase tracking-widest">{user.security.hideBalances ? 'Stealth ON' : 'Privacy'}</span>
               </button>
             </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-              {[
-                { id: 'Electricity', label: 'Electricity', icon: ICONS.Electricity, color: 'bg-amber-50 text-amber-600 border-amber-100' },
-                { id: 'Internet', label: 'Internet', icon: ICONS.Data, color: 'bg-blue-50 text-blue-600 border-blue-100' },
-                { id: 'TV', label: 'Cable TV', icon: ICONS.TV, color: 'bg-purple-50 text-purple-600 border-purple-100' },
-                { id: 'Water', label: 'Water Settlement', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>, color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
-                { id: 'Betting', label: 'Betting Wallets', icon: ICONS.Betting, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-                { id: 'Gov Services', label: 'Gov & Taxes', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, color: 'bg-slate-50 text-slate-600 border-slate-100' }
-              ].map(cat => (
-                <button 
-                  key={cat.id} 
-                  onClick={() => { setSelectedService(cat.id); setShowCategoryPicker(false); }}
-                  className={`p-10 rounded-[3rem] border-2 transition-all flex flex-col items-center gap-5 hover:shadow-2xl hover:scale-105 active:scale-95 ${cat.color}`}
-                >
-                  <div className="w-14 h-14 flex items-center justify-center">
-                    {React.isValidElement(cat.icon) ? React.cloneElement(cat.icon as any, { width: 36, height: 36, strokeWidth: 3 }) : cat.icon}
-                  </div>
-                  <span className="font-black text-[11px] uppercase tracking-widest text-center leading-tight">{cat.label}</span>
-                </button>
-              ))}
+            <h2 className={`text-7xl md:text-9xl font-[1000] text-white tracking-tighter flex items-baseline justify-center md:justify-start gap-6 leading-[0.8] transition-all origin-left ${user.security.hideBalances ? 'blur-2xl select-none opacity-40' : ''}`}>
+              <span className="text-3xl md:text-6xl font-black text-purple-500">{currencySymbol}</span>
+              {formatBalance(user.balance)}
+            </h2>
+          </div>
+          <div className="flex flex-col gap-4 w-full md:w-auto">
+            <div className="flex gap-4">
+              <button onClick={() => setIsWithdrawOpen(true)} className="flex-1 md:w-56 bg-white/5 border-2 border-white/10 py-6 rounded-[1.8rem] font-black text-[12px] uppercase tracking-widest text-center transition-all hover:bg-white/10 active:scale-95">Withdraw</button>
+              <button onClick={() => setIsReceiveOpen(true)} className="flex-1 md:w-56 bg-white border-2 border-white py-6 rounded-[1.8rem] font-black text-[12px] uppercase tracking-widest text-black text-center transition-all hover:bg-slate-100 active:scale-95 shadow-xl">Receive</button>
             </div>
+            <button onClick={() => setIsDepositOpen(true)} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 py-7 rounded-[1.8rem] font-black text-[13px] uppercase tracking-[0.4em] text-center transition-all hover:scale-[1.02] shadow-[0_30px_70px_rgba(16,185,129,0.3)] active:scale-95">Add Liquidity</button>
           </div>
         </div>
-      )}
+      </section>
 
+      {/* The MPN Infrastructure Grid */}
+      <section className="bg-white p-8 md:p-16 rounded-[3rem] border border-slate-50 shadow-xl">
+         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 gap-6">
+            <div className="space-y-1">
+              <h3 className="text-3xl md:text-5xl font-[1000] text-black tracking-tight leading-none">{t('mpn_grid', user.country)}</h3>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">{t('mpn_subtitle', user.country)}</p>
+            </div>
+            <button onClick={() => setShowCategoryPicker(true)} className="px-8 py-3.5 bg-slate-50 rounded-2xl border border-slate-100 font-black text-[10px] uppercase tracking-widest text-purple-600 hover:bg-purple-50 transition-all">Select Full Grid</button>
+         </div>
+         
+         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 sm:gap-12">
+            {gridItems.map(item => (
+              <button 
+                key={item.id} 
+                onClick={() => setSelectedService(item.id)}
+                className="flex flex-col items-center gap-5 group transition-all"
+              >
+                <div className={`w-16 h-16 sm:w-24 sm:h-24 rounded-[2rem] flex items-center justify-center transition-all group-hover:scale-110 group-hover:-translate-y-2 shadow-xl ${item.color}`}>
+                   {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement<any>, { width: 28, height: 28, strokeWidth: 3.5 }) : item.icon}
+                </div>
+                <div className="text-center space-y-1.5">
+                  <p className="text-xs sm:text-base font-black uppercase text-black tracking-widest group-hover:text-purple-600 transition-colors">{item.label}</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">{item.detail}</p>
+                </div>
+              </button>
+            ))}
+         </div>
+      </section>
+
+      {/* Activity Tracker */}
+      <div className="bg-white rounded-[3rem] border border-slate-100 shadow-xl p-8 md:p-14">
+         <div className="flex items-center justify-between mb-10">
+            <div className="space-y-1">
+               <h3 className="text-2xl md:text-3xl font-[1000] text-black tracking-tight leading-none">
+                 {t('recent_transactions', user.country)}
+               </h3>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                 Live Terminal Activity
+               </p>
+            </div>
+            <button onClick={() => onTabChange('history')} className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:text-purple-600 transition-all">
+              {t('see_more', user.country)}
+            </button>
+         </div>
+         
+         <div className="space-y-2.5 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+           {transactions.length > 0 ? transactions.map(tx => (
+             <div key={tx.id} className="p-5 md:p-7 flex items-center justify-between rounded-[2rem] bg-slate-50/50 border border-transparent hover:border-purple-100 hover:bg-white transition-all group shadow-sm">
+                <div className="flex items-center gap-6">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${tx.type === 'credit' ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-slate-400'}`}>
+                     {tx.type === 'credit' ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M7 7l10 10M17 7v10H7"/></svg> : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M17 17L7 7M7 17V7h10"/></svg>}
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`font-black text-black text-base md:text-lg truncate group-hover:text-purple-600 transition-colors leading-none ${user.security.hideBalances ? 'blur-sm select-none' : ''}`}>{tx.name}</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2">{tx.date} • {tx.category}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                   <p className={`font-black text-lg md:text-xl ${tx.type === 'credit' ? 'text-emerald-600' : 'text-black'} ${user.security.hideBalances ? 'blur-sm select-none' : ''}`}>{tx.type === 'credit' ? '+' : '-'}{currencySymbol}{user.security.hideBalances ? '•••' : tx.amount.toLocaleString()}</p>
+                   <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest mt-1 block">Authorized</span>
+                </div>
+             </div>
+           )) : (
+             <div className="py-24 flex flex-col items-center justify-center text-center opacity-30 grayscale gap-5">
+               <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center shadow-inner"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+               <p className="text-xs font-black uppercase tracking-[0.3em]">No Recorded Activity</p>
+             </div>
+           )}
+         </div>
+      </div>
+
+      {/* Modals */}
       {selectedService && (
         <ServiceModal 
           isOpen={true} 
@@ -344,18 +321,94 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
           serviceName={selectedService}
           country={user.country}
           currency={user.currency}
-          onComplete={(amt, name, isRec, sched) => onNewTransaction(amt, name, selectedService, isRec, sched)}
+          onComplete={(amt, name) => {
+             onNewTransaction(-amt, name, selectedService);
+             setSelectedService(null);
+          }}
         />
       )}
-      {isDepositOpen && <DepositModal isOpen={true} onClose={() => setIsDepositOpen(false)} user={user} onDeposit={onDeposit} />}
-      {isWithdrawOpen && <WithdrawModal isOpen={true} onClose={() => setIsWithdrawOpen(false)} currency={user.currency} country={user.country} balance={user.balance} onWithdraw={onWithdraw} />}
-      {isReceiveOpen && <ReceiveModal isOpen={true} onClose={() => setIsReceiveOpen(false)} user={user} />}
-      
+
+      {showCategoryPicker && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-4xl rounded-[4rem] p-10 md:p-16 shadow-2xl border border-white animate-in zoom-in-95 duration-300">
+              <div className="flex justify-between items-center mb-12">
+                 <div className="space-y-2">
+                    <h2 className="text-4xl font-[1000] text-slate-900 tracking-tighter leading-none">Full Terminal Grid</h2>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Initialize Regional Settlement Node</p>
+                 </div>
+                 <button onClick={() => setShowCategoryPicker(false)} className="p-4 bg-slate-50 text-slate-400 hover:text-slate-950 rounded-3xl transition-all border border-slate-100 shadow-sm"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
+                 {gridItems.map(item => (
+                    <button 
+                      key={item.id} 
+                      onClick={() => { setSelectedService(item.id); setShowCategoryPicker(false); }}
+                      className="group flex flex-col items-center gap-4 transition-all"
+                    >
+                       <div className={`w-24 h-24 rounded-[2.5rem] ${item.color} flex items-center justify-center transition-all group-hover:scale-110 group-hover:-translate-y-2 shadow-2xl`}>
+                          {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement<any>, { width: 32, height: 32, strokeWidth: 3.5 }) : item.icon}
+                       </div>
+                       <p className="font-black text-xs uppercase tracking-widest text-slate-900 group-hover:text-purple-600">{item.label}</p>
+                    </button>
+                 ))}
+                 {['Insurance', 'Investment', 'Water', 'Domestic'].map(extra => (
+                   <button 
+                      key={extra} 
+                      onClick={() => { setSelectedService(extra); setShowCategoryPicker(false); }}
+                      className="group flex flex-col items-center gap-4 transition-all"
+                   >
+                      <div className={`w-24 h-24 rounded-[2.5rem] bg-slate-50 text-slate-400 flex items-center justify-center transition-all group-hover:scale-110 group-hover:-translate-y-2 shadow-sm border border-slate-100 group-hover:border-purple-200 group-hover:text-purple-600`}>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 5v14M5 12h14"/></svg>
+                      </div>
+                      <p className="font-black text-xs uppercase tracking-widest text-slate-400 group-hover:text-purple-600">{extra}</p>
+                   </button>
+                 ))}
+              </div>
+           </div>
+        </div>
+      )}
+
+      {isDepositOpen && (
+        <DepositModal 
+          isOpen={true} 
+          onClose={() => setIsDepositOpen(false)} 
+          user={user} 
+          onDeposit={(amt, method) => {
+             onDeposit(amt, method);
+             setIsDepositOpen(false);
+          }} 
+        />
+      )}
+
+      {isWithdrawOpen && (
+        <WithdrawModal 
+          isOpen={true} 
+          onClose={() => setIsWithdrawOpen(false)} 
+          currency={user.currency}
+          country={user.country}
+          balance={user.balance}
+          onWithdraw={(amt, dest) => {
+             onWithdraw(amt, dest);
+             onNewTransaction(-amt, `Withdrawal to ${dest}`, 'Transfer');
+             setIsWithdrawOpen(false);
+          }}
+        />
+      )}
+
+      {isReceiveOpen && (
+        <ReceiveModal 
+          isOpen={true} 
+          onClose={() => setIsReceiveOpen(false)} 
+          user={user} 
+        />
+      )}
+
       <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
       `}</style>
     </div>
   );

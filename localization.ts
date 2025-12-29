@@ -2,62 +2,85 @@
 import { Country } from './types';
 
 export const translations: Record<string, Record<'en' | 'fr', string>> = {
-  home: { en: 'Home', fr: 'Accueil' },
-  wallet: { en: 'Wallet', fr: 'Portefeuille' },
+  // Navigation
+  nav_home: { en: 'Home', fr: 'Accueil' },
+  nav_money_hub: { en: 'Money Hub', fr: 'Hub d\'Argent' },
+  nav_loans: { en: 'Loans', fr: 'Prêts' },
+  nav_crypto: { en: 'Crypto', fr: 'Crypto' },
+  nav_work: { en: 'Work', fr: 'Travail' },
+  nav_helpers: { en: 'Helpers', fr: 'Assistants' },
+  nav_forge: { en: 'Forge', fr: 'Forge' },
+  nav_about: { en: 'About', fr: 'À Propos' },
+  nav_settings: { en: 'Settings', fr: 'Paramètres' },
+  nav_membership: { en: 'Elite Plan', fr: 'Plan Élite' },
+  nav_elite: { en: 'Elite', fr: 'Élite' },
   history: { en: 'History', fr: 'Historique' },
   finance: { en: 'Finance', fr: 'Finance' },
-  invest: { en: 'Invest', fr: 'Investir' },
-  ai: { en: 'AI', fr: 'IA' },
-  contacts: { en: 'Contacts', fr: 'Contacts' },
-  welcome_back: { en: 'Welcome back', fr: 'Bon retour' },
-  pay_all_bills: { en: 'Pay all your bills in one place', fr: 'Payez toutes vos factures au même endroit' },
-  transfer: { en: 'Transfer', fr: 'Transférer' },
-  top_up: { en: 'Top Up', fr: 'Recharger' },
-  withdraw: { en: 'Withdraw', fr: 'Retirer' },
-  receive: { en: 'Receive', fr: 'Recevoir' },
-  total_balance: { en: 'Total Account Balance', fr: 'Solde Total du Compte' },
-  services: { en: 'Bill Payment Center', fr: 'Centre de Paiement des Factures' },
-  activity: { en: 'Recent Activity', fr: 'Activité Récente' },
-  credit_rating: { en: 'Global Credit Rating', fr: 'Cote de Crédit Globale' },
-  
-  // Services
-  internet_services: { en: 'Internet Services', fr: 'Services Internet' },
-  order_food: { en: 'Order Food', fr: 'Commander Repas' },
 
-  // Onboarding / Tour
-  tour_welcome_title: { en: 'Operational Briefing', fr: 'Briefing Opérationnel' },
-  tour_welcome_desc: { en: 'Prepare to navigate the regional financial grid.', fr: 'Préparez-vous à naviguer sur la grille financière.' },
-  tour_step1_title: { en: 'MPN SETTLEMENT', fr: 'RÈGLEMENT MPN' },
-  tour_step1_desc: { en: 'Direct utility node connections for instant payments.', fr: 'Connexions directes pour paiements instantanés.' },
-  tour_step2_title: { en: 'LIQUIDITY POOLS', fr: 'POOLS DE LIQUIDITÉ' },
-  tour_step2_desc: { en: 'Native GHS, NGN, and XOF crypto on-ramps.', fr: 'Passerelles crypto GHS, NGN et XOF natives.' },
-  tour_step3_title: { en: 'NEURAL SCORING', fr: 'SCORE NEURAL' },
-  tour_step3_desc: { en: 'AI-driven credit limits based on transaction velocity.', fr: 'Limites de crédit IA basées sur votre activité.' },
-  tour_finish: { en: 'Complete Briefing', fr: 'Terminer le Briefing' },
+  // Dashboard
+  hello: { en: 'Hello', fr: 'Bonjour' },
+  select_grid: { en: 'Select Regional Node', fr: 'Choisir le Nœud Régional' },
+  wallet_balance: { en: 'Vault Balance', fr: 'Solde du Coffre' },
+  mpn_grid: { en: 'The MPN Grid', fr: 'La Grille MPN' },
+  mpn_subtitle: { en: 'Mobile • Power • Network Settlements', fr: 'Règlements Mobile • Énergie • Réseau' },
+  recent_transactions: { en: 'Recent Transactions', fr: 'Transactions Récentes' },
+  see_more: { en: 'See More', fr: 'Voir Plus' },
+  built_in_2025: { en: 'Built for 2025', fr: 'Conçu pour 2025' },
+  secure_regional_payments: { en: 'Secure Regional Node', fr: 'Nœud Régional Sécurisé' },
+  greeting_morning: { en: 'Good Morning', fr: 'Bon Matin' },
+  greeting_afternoon: { en: 'Good Afternoon', fr: 'Bon Après-midi' },
+  greeting_evening: { en: 'Good Evening', fr: 'Bonsoir' },
 
-  // Feature Guide Toggles
-  guide_title: { en: 'MASTER PAYFLOW PRO', fr: 'MAÎTRISEZ PAYFLOW PRO' },
-  guide_subtitle: { en: 'Your Pan-African Financial OS is active.', fr: 'Votre OS financier panafricain est activé.' },
-  
-  feat_bills_title: { en: 'MPN Bill Center', fr: 'Centre de Factures MPN' },
-  feat_bills_detail: { en: 'Settle Electricity (IKEDC, ECG, Senelec), Water, and TV subscriptions instantly.', fr: 'Réglez vos factures d\'électricité, d\'eau et télé instantanément.' },
-  
-  feat_transfer_title: { en: 'Smart Transfers', fr: 'Transferts Intelligents' },
-  feat_transfer_detail: { en: 'Experience friction-less cross-border rails between NG, GH, and SN.', fr: 'Déplacez des fonds sans friction entre NG, GH et SN.' },
-  
-  feat_ai_title: { en: 'Gemini Analysis', fr: 'Analyse Gemini' },
-  feat_ai_detail: { en: 'Gemini AI scans your transaction velocity to generate a unique credit score.', fr: 'L\'IA Gemini analyse votre vitesse de transaction pour un score unique.' },
-  
-  feat_crypto_title: { en: 'Crypto Liquidity', fr: 'Liquidité Crypto' },
-  feat_crypto_detail: { en: 'Trade BTC, ETH, and stablecoins directly using local fiat.', fr: 'Échangez du BTC et ETH en utilisant votre monnaie locale.' },
-  
-  feat_b2b_title: { en: 'Merchant Hub', fr: 'Hub Marchand' },
-  feat_b2b_detail: { en: 'Professional invoicing and bulk payroll tools for African entrepreneurs.', fr: 'Facturation pro et outils de paie pour les entrepreneurs.' },
-  
-  feat_nearby_title: { en: 'Infrastructure', fr: 'Infrastructure' },
-  feat_nearby_detail: { en: 'Find verified PayFlow agents and ATMs near you using Google Maps.', fr: 'Trouvez des agents et distributeurs via Google Maps.' },
+  // Feature Cards
+  feat_bills_title: { en: 'Pay Your Bills', fr: 'Payez Vos Factures' },
+  feat_bills_action: { en: 'PAY A BILL', fr: 'PAYER' },
+  feat_bills_detail: { en: "Pay for electricity, internet, and TV subscriptions instantly.", fr: "Payez l'électricité, l'internet et les abonnements TV instantanément." },
+  feat_transfer_title: { en: 'Send Money', fr: 'Envoyer l\'Argent' },
+  feat_transfer_action: { en: 'SEND MONEY', fr: 'ENVOYER' },
+  feat_transfer_detail: { en: "Quickly send money to friends and family in the region.", fr: "Envoyez rapidement de l'argent à vos proches dans la région." },
+  feat_savings_title: { en: 'Save & Grow', fr: 'Épargner & Grandir' },
+  feat_savings_action: { en: 'START SAVING', fr: 'ÉPARGNER' },
+  feat_savings_detail: { en: "Build your future. We help you save small amounts daily.", fr: "Préparez votre avenir. Nous vous aidons à épargner quotidiennement." },
+  feat_crypto_title: { en: 'Buy & Sell Crypto', fr: 'Achat/Vente Crypto' },
+  feat_crypto_action: { en: 'GO TO CRYPTO', fr: 'VERS CRYPTO' },
+  feat_crypto_detail: { en: "Safely buy or sell Bitcoin and other digital coins.", fr: "Achetez ou vendez du Bitcoin et d'autres jetons en sécurité." },
+  feat_business_title: { en: 'For Your Business', fr: 'Pour Votre Business' },
+  feat_business_action: { en: 'BUSINESS TOOLS', fr: 'OUTILS PRO' },
+  feat_business_detail: { en: "Create invoices and pay your staff easily.", fr: "Créez des factures et payez votre personnel facilement." },
+  feat_nearby_title: { en: 'Find Help Nearby', fr: 'Aide à Proximité' },
+  feat_nearby_action: { en: 'FIND AGENTS', fr: 'TROUVER AGENTS' },
+  feat_nearby_detail: { en: "Need cash or assistance? Find the closest PayFlow agents.", fr: "Besoin d'argent ou d'aide ? Trouvez les agents PayFlow proches." },
 
-  dismiss_guide: { en: 'Got it, let\'s go!', fr: 'Compris, c\'est parti !' }
+  // Grid Items
+  grid_electricity: { en: 'Electricity', fr: 'Électricité' },
+  grid_internet: { en: 'Internet', fr: 'Internet' },
+  grid_tv: { en: 'TV & Cable', fr: 'Télévision' },
+  grid_food: { en: 'Order Food', fr: 'Restauration' },
+  grid_transfer: { en: 'Transfer', fr: 'Transfert' },
+  grid_airtime: { en: 'Airtime', fr: 'Crédit Appels' },
+  grid_groceries: { en: 'Groceries', fr: 'Courses' },
+  grid_transport: { en: 'Transport', fr: 'Transport' },
+  grid_betting: { en: 'Betting', fr: 'Jeux & Paris' },
+  grid_gov: { en: 'Gov Services', fr: 'Services Publics' },
+
+  grid_desc_electricity: { en: 'Pay for light', fr: 'Payer le courant' },
+  grid_desc_internet: { en: 'Data & Fiber', fr: 'Data & Fibre' },
+  grid_desc_tv: { en: 'Canal+ / DSTV', fr: 'Canal+ / TNT' },
+  grid_desc_food: { en: 'Fast Delivery', fr: 'Livraison Rapide' },
+  grid_desc_transfer: { en: 'To Banks', fr: 'Vers Banques' },
+  grid_desc_airtime: { en: 'Refill Credit', fr: 'Recharge Crédit' },
+  grid_desc_groceries: { en: 'Supermarkets', fr: 'Supermarchés' },
+  grid_desc_transport: { en: 'Bus & Cab', fr: 'Bus & Taxis' },
+  grid_desc_betting: { en: 'Wallet top-ups', fr: 'Recharge Compte' },
+  grid_desc_gov: { en: 'Utility settlements', fr: 'Services Publics' },
+
+  // About Page
+  about_title: { en: 'The PayFlow Protocol', fr: 'Le Protocole PayFlow' },
+  about_quote: { en: 'Engineering the financial future of West Africa, one transaction at a time.', fr: 'Façonner l\'avenir financier de l\'Afrique de l\'Ouest, une transaction à la fois.' },
+  security: { en: 'Ironclad Security', fr: 'Sécurité d\'Acier' },
+  usability: { en: 'Inclusive Design', fr: 'Conception Inclusive' },
+  simplicity: { en: 'Total Simplicity', fr: 'Simplicité Totale' },
+  mission_statement: { en: 'Our Mission', fr: 'Notre Mission' },
 };
 
 export const getLanguage = (country: Country): 'en' | 'fr' => {

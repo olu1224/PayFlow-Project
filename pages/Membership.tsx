@@ -15,7 +15,7 @@ const Membership: React.FC<{ user: User, onUpgrade?: (plan: string) => void }> =
       price: 'Free',
       desc: 'Essential financial tools for daily regional utility payments.',
       features: [
-        'Pay-as-you-go Fees (NGN 100/ea)',
+        '1.5% Processing Fee',
         'Standard AI Chat Access',
         'Tier 1 Borrowing Limit',
         'Basic Transaction History'
@@ -138,16 +138,43 @@ const Membership: React.FC<{ user: User, onUpgrade?: (plan: string) => void }> =
         ))}
       </div>
 
+      <section className="bg-white p-12 md:p-20 rounded-[4rem] border border-slate-100 shadow-2xl mx-4 space-y-16">
+         <div className="text-center space-y-4">
+            <h2 className="text-3xl md:text-5xl font-[1000] text-slate-900 tracking-tight">Revenue Architecture</h2>
+            <p className="text-slate-500 font-bold max-w-xl mx-auto uppercase tracking-widest text-[10px]">How PayFlow sustains the regional grid</p>
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="space-y-6 p-8 bg-slate-50 rounded-[3rem] border border-white shadow-inner">
+               <div className="w-14 h-14 bg-purple-600 text-white rounded-2xl flex items-center justify-center shadow-lg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m12 15 2 2 4-4"/><path d="M7 21h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"/><path d="M9 1h6"/></svg></div>
+               <h3 className="text-xl font-black text-slate-900">Transactional Yield</h3>
+               <p className="text-sm text-slate-600 font-medium leading-relaxed">Free users contribute 1.5% processing fees on all outward settlements. This covers network maintenance and immediate bank rail access.</p>
+            </div>
+            
+            <div className="space-y-6 p-8 bg-indigo-600 rounded-[3rem] border border-indigo-400 text-white shadow-2xl">
+               <div className="w-14 h-14 bg-white text-indigo-600 rounded-2xl flex items-center justify-center shadow-lg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+               <h3 className="text-xl font-black">Subscription MRR</h3>
+               <p className="text-sm text-indigo-100 font-medium leading-relaxed">Elite users pay a fixed monthly recurring fee (MRR) to waive all transactional costs and unlock Gemini 3 Pro AI intelligence for their portfolios.</p>
+            </div>
+
+            <div className="space-y-6 p-8 bg-slate-950 rounded-[3rem] border border-white/10 text-white shadow-2xl">
+               <div className="w-14 h-14 bg-purple-500 text-white rounded-2xl flex items-center justify-center shadow-lg"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
+               <h3 className="text-xl font-black">Institutional Rails</h3>
+               <p className="text-sm text-slate-400 font-medium leading-relaxed">Enterprise clients utilize our high-bandwidth regional nodes for bulk disbursements, generating revenue through high-volume API licensing.</p>
+            </div>
+         </div>
+      </section>
+
       <div className="bg-slate-50 p-12 rounded-[4rem] border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-10">
          <div className="space-y-2">
-           <h4 className="text-2xl font-[900] text-slate-900 tracking-tight leading-none">Market Fee Transparency</h4>
+           <h4 className="text-2xl font-[1000] text-slate-900 tracking-tight leading-none">Market Fee Transparency</h4>
            <p className="text-slate-500 font-bold max-w-xl">
              We charge a nominal convenience fee to maintain direct grid connections with electricity and utility providers in Nigeria, Ghana, and Senegal. Elite members enjoy 100% fee waivers.
            </p>
          </div>
          <div className="flex gap-8 text-slate-900">
             <div className="text-center">
-              <p className="text-3xl font-[900] text-purple-600 leading-none">1.0%</p>
+              <p className="text-3xl font-[900] text-purple-600 leading-none">1.5%</p>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Avg. Utility Fee</p>
             </div>
             <div className="text-center">

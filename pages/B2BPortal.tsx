@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Invoice } from '../types';
 import { findNearbyBanksOrAgents } from '../geminiService';
+import ServiceModal from '../components/ServiceModal';
+import { t } from '../localization';
 
 interface B2BPortalProps {
   user: User;
@@ -16,6 +18,7 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
   ]);
   const [showBulk, setShowBulk] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedGovService, setSelectedGovService] = useState<string | null>(null);
   const [bulkData, setBulkData] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
@@ -86,7 +89,7 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
     await new Promise(r => setTimeout(r, 3000));
 
     if (onNewTransaction) {
-      onNewTransaction(totalAmount, `Bulk Disbursement (${processedLines.length} recipients)`, 'B2B Disbursement');
+      onNewTransaction(-totalAmount, `Bulk Disbursement (${processedLines.length} recipients)`, 'B2B Disbursement');
     }
 
     setIsProcessing(false);
@@ -122,32 +125,39 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
   };
 
   const stats = [
-    { label: 'Receivables', value: invoices.filter(i => i.status !== 'paid').reduce((acc, curr) => acc + curr.amount, 0), color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Total Invoiced', value: invoices.reduce((acc, curr) => acc + curr.amount, 0), color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Paid This Month', value: invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0), color: 'text-emerald-600', bg: 'bg-emerald-50' }
+    { label: t('receivables', user.country), value: invoices.filter(i => i.status !== 'paid').reduce((acc, curr) => acc + curr.amount, 0), color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: t('total_invoiced', user.country), value: invoices.reduce((acc, curr) => acc + curr.amount, 0), color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: user.country === 'Senegal' ? 'Payé ce mois' : 'Paid This Month', value: invoices.filter(i => i.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0), color: 'text-emerald-600', bg: 'bg-emerald-50' }
   ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="px-2">
-          <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">B2B Portal</h1>
-          <p className="text-slate-500 font-medium">Enterprise tools for West African business growth.</p>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">{t('b2b_portal', user.country)}</h1>
+          <p className="text-slate-500 font-medium">{user.country === 'Senegal' ? 'Outils d\'entreprise pour la croissance régionale.' : 'Enterprise tools for West African business growth.'}</p>
         </div>
-        <div className="flex gap-3 px-2">
+        <div className="flex flex-wrap gap-3 px-2">
+          <button 
+            onClick={() => setSelectedGovService('Gov Services')}
+            className="flex-1 md:flex-none bg-emerald-50 border border-emerald-100 text-emerald-800 px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all active:scale-95 shadow-sm"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s-8-4-8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            {t('grid_gov', user.country)}
+          </button>
           <button 
             onClick={() => setShowBulk(true)} 
             className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-800 px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="19" cy="11" r="2"/></svg>
-            Bulk Pay
+            {t('bulk_pay', user.country)}
           </button>
           <button 
             onClick={() => setShowInvoiceModal(true)}
             className="flex-1 md:flex-none bg-purple-600 text-white px-8 py-3 rounded-2xl font-black shadow-xl shadow-purple-100 hover:scale-105 transition-all flex items-center justify-center gap-2 active:scale-95"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-            Invoice
+            {t('invoice', user.country)}
           </button>
         </div>
       </header>
@@ -169,8 +179,8 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
                 AI Network Explorer
               </div>
-              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Bank & Agent Network</h2>
-              <p className="text-slate-500 text-sm font-medium">Locate verified settlement points and financial partners across {user.country}.</p>
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">{t('bank_agent_network', user.country)}</h2>
+              <p className="text-slate-500 text-sm font-medium">{user.country === 'Senegal' ? 'Localisez les points de règlement et les partenaires financiers.' : 'Locate verified settlement points and financial partners across region.'}</p>
             </div>
             {!bankNetwork && (
               <button 
@@ -308,7 +318,22 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
         </div>
       </div>
 
-      {/* New Invoice Modal - Mobile Optimized */}
+      {/* Gov Service Integration */}
+      {selectedGovService && (
+        <ServiceModal 
+          isOpen={true} 
+          onClose={() => setSelectedGovService(null)} 
+          serviceName={selectedGovService}
+          country={user.country}
+          currency={user.currency}
+          onComplete={(amt, name) => {
+            if (onNewTransaction) onNewTransaction(-amt, name, 'Government');
+            setSelectedGovService(null);
+          }}
+        />
+      )}
+
+      {/* New Invoice Modal */}
       {showInvoiceModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-xl animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col border border-white">
@@ -319,7 +344,7 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
                   <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest">Regional B2B Rail</p>
                 </div>
                 <button onClick={() => setShowInvoiceModal(false)} className="p-3 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-2xl transition-all">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
               </div>
               <form onSubmit={handleCreateInvoice} className="space-y-6">
@@ -368,9 +393,9 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
         </div>
       )}
 
-      {/* Bulk Disbursement Modal - Mobile Optimized */}
+      {/* Bulk Disbursement Modal */}
       {showBulk && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-xl animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-2xl rounded-[2.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90dvh] flex flex-col border border-white">
              <div className="p-8 md:p-10 overflow-y-auto custom-scrollbar flex-1">
                <div className="flex justify-between items-center mb-6">
@@ -425,10 +450,10 @@ const B2BPortal: React.FC<B2BPortalProps> = ({ user, onNewTransaction }) => {
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
+        .custom-scrollbar-track {
           background: transparent;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
+        .custom-scrollbar-thumb {
           background: #e2e8f0;
           border-radius: 10px;
         }

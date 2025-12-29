@@ -25,6 +25,18 @@ export interface User {
     marketing: boolean;
     dailyLimit: number;
   };
+  wealth?: {
+    emergencyFund: {
+      tier1: number; // Instant Access
+      tier2: number; // Growth/Fixed
+      target: number;
+    };
+    dollarFund: {
+      balanceUsd: number;
+      investedNaira: number;
+    };
+    connectedPlatforms: string[];
+  };
 }
 
 export interface Transaction {
@@ -35,7 +47,7 @@ export interface Transaction {
   amount: number;
   date: string;
   status: 'completed' | 'pending' | 'failed';
-  method?: string; // Tracks 'card', 'transfer', etc.
+  method?: string; 
 }
 
 export interface RecurringPayment {
