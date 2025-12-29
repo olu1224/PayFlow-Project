@@ -35,12 +35,12 @@ export interface Trade {
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('payflow_user_session');
+    const saved = localStorage.getItem('zynctra_user_session');
     return saved ? JSON.parse(saved) : null;
   });
 
   const [isLocked, setIsLocked] = useState(() => {
-    const lastUnlock = localStorage.getItem('payflow_last_unlock');
+    const lastUnlock = localStorage.getItem('zynctra_last_unlock');
     if (!lastUnlock) return true;
     const now = Date.now();
     const twentyFourHours = 24 * 60 * 60 * 1000;
@@ -60,7 +60,7 @@ const App: React.FC = () => {
     if (!user) return;
     const uid = user.uid;
     const loadData = <T,>(key: string, defaultValue: T): T => {
-      const saved = localStorage.getItem(`payflow_${uid}_${key}`);
+      const saved = localStorage.getItem(`zynctra_${uid}_${key}`);
       return saved ? JSON.parse(saved) : defaultValue;
     };
     setTransactions(loadData('txs', []));
@@ -79,20 +79,17 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     const uid = user.uid;
-    localStorage.setItem(`payflow_${uid}_txs`, JSON.stringify(transactions));
-    localStorage.setItem(`payflow_${uid}_trades`, JSON.stringify(trades));
-    localStorage.setItem(`payflow_${uid}_portfolio`, JSON.stringify(portfolio));
-    localStorage.setItem(`payflow_${uid}_goals`, JSON.stringify(goals));
-    localStorage.setItem(`payflow_${uid}_beneficiaries`, JSON.stringify(beneficiaries));
-    localStorage.setItem(`payflow_${uid}_agents`, JSON.stringify(agents));
+    localStorage.setItem(`zynctra_${uid}_txs`, JSON.stringify(transactions));
+    localStorage.setItem(`zynctra_${uid}_trades`, JSON.stringify(trades));
+    localStorage.setItem(`zynctra_${uid}_portfolio`, JSON.stringify(portfolio));
+    localStorage.setItem(`zynctra_${uid}_goals`, JSON.stringify(goals));
+    localStorage.setItem(`zynctra_${uid}_beneficiaries`, JSON.stringify(beneficiaries));
+    localStorage.setItem(`zynctra_${uid}_agents`, JSON.stringify(agents));
   }, [transactions, trades, portfolio, goals, beneficiaries, agents, user?.uid]);
 
   const calculateServiceFee = (amount: number) => {
     if (!user) return 0;
-    // Elite members have zero transaction fees
     if (user.creditScore >= 700) return 0;
-    
-    // Standard members: 1.5% fee on debits (bills/transfers), min 100 units
     if (amount < 0) {
       const fee = Math.max(100, Math.abs(amount) * 0.015);
       return fee;
@@ -102,14 +99,14 @@ const App: React.FC = () => {
 
   const handleOnboardingComplete = (newUser: User) => {
     setUser(newUser);
-    localStorage.setItem('payflow_user_session', JSON.stringify(newUser));
-    localStorage.setItem('payflow_last_unlock', Date.now().toString());
+    localStorage.setItem('zynctra_user_session', JSON.stringify(newUser));
+    localStorage.setItem('zynctra_last_unlock', Date.now().toString());
     setIsLocked(false);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('payflow_user_session');
-    localStorage.removeItem('payflow_last_unlock');
+    localStorage.removeItem('zynctra_user_session');
+    localStorage.removeItem('zynctra_last_unlock');
     setUser(null);
     setIsLocked(true);
     setActiveTab('dashboard');
@@ -123,14 +120,14 @@ const App: React.FC = () => {
     let curr: Currency = country === 'Ghana' ? 'GHS' : country === 'Senegal' ? 'XOF' : 'NGN';
     const updated = { ...user, country, currency: curr };
     setUser(updated);
-    localStorage.setItem('payflow_user_session', JSON.stringify(updated));
+    localStorage.setItem('zynctra_user_session', JSON.stringify(updated));
   };
 
   const handleUpdateSecurity = (updates: Partial<User['security']>) => {
     if (!user) return;
     const updated = { ...user, security: { ...user.security, ...updates } };
     setUser(updated);
-    localStorage.setItem('payflow_user_session', JSON.stringify(updated));
+    localStorage.setItem('zynctra_user_session', JSON.stringify(updated));
   };
 
   const handleUpdateWealth = (updates: Partial<User['wealth']>) => {
@@ -147,7 +144,7 @@ const App: React.FC = () => {
       } 
     };
     setUser(updated);
-    localStorage.setItem('payflow_user_session', JSON.stringify(updated));
+    localStorage.setItem('zynctra_user_session', JSON.stringify(updated));
   };
 
   const handleUpdateGoal = (goalId: string, amount: number) => {
@@ -163,7 +160,7 @@ const App: React.FC = () => {
     }
 
     const fee = calculateServiceFee(amount);
-    const totalDeduction = amount - fee; // amount is negative for debits
+    const totalDeduction = amount - fee;
 
     if (user.balance < Math.abs(totalDeduction)) {
       alert(`Insufficient balance. Transaction: ${Math.abs(amount)}, Service Fee: ${fee}`);
@@ -217,9 +214,9 @@ const App: React.FC = () => {
     if (!user) return;
     const rate = user.currency === 'NGN' ? 1550 : user.currency === 'GHS' ? 12 : 610;
     const totalLocal = amount * priceUsd * rate;
-    const tradeFee = user.creditScore >= 700 ? 0 : totalLocal * 0.01; // 1% trade fee for standard
+    const tradeFee = user.creditScore >= 700 ? 0 : totalLocal * 0.01;
 
-    if (isBuy && user.balance < (totalLocal + tradeFee)) return alert("You don't have enough money for this trade including fees.");
+    if (isBuy && user.balance < (totalLocal + tradeFee)) return alert("You don't have enough money for this trade.");
     
     setPortfolio(prev => prev.map(a => a.id === assetId ? { ...a, amount: isBuy ? a.amount + amount : a.amount - amount } : a));
     setUser(prev => prev ? ({ ...prev, balance: isBuy ? prev.balance - (totalLocal + tradeFee) : prev.balance + (totalLocal - tradeFee) }) : null);
@@ -227,7 +224,6 @@ const App: React.FC = () => {
     const tradeId = `t-${Date.now()}`;
     setTrades([{ id: tradeId, asset: assetId.toUpperCase(), amount, priceUsd, type: isBuy ? 'buy' : 'sell', date: 'Just now' }, ...trades]);
     
-    // Corrected call to handleNewTransaction from onNewTransaction
     if (tradeFee > 0) {
       handleNewTransaction(-tradeFee, `Trade Fee: ${assetId.toUpperCase()} ${isBuy ? 'Buy' : 'Sell'}`, 'Service Fee');
     }
@@ -268,7 +264,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[#FDFDFD] overflow-hidden font-['Inter'] selection:bg-purple-100 relative">
+    <div className="flex min-h-[100dvh] flex-col bg-[#FDFDFD] overflow-hidden font-['Inter'] selection:bg-cyan-100 relative">
       <TopBar user={user} activeTab={activeTab} setActiveTab={setActiveTab} onOpenNotifications={() => {}} onOpenSettings={() => setActiveTab('settings')} onUpdateCountry={switchCountry} />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <div className="flex-1 overflow-y-auto scroll-smooth relative z-10 p-4 md:p-12 pb-40 xl:pb-16">
@@ -280,8 +276,8 @@ const App: React.FC = () => {
           
           <footer className="max-w-[1200px] mx-auto pt-20 pb-10 px-4 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-slate-100 mt-20 opacity-60">
              <div className="flex items-center gap-4">
-               <span className="text-[12px] font-[1000] uppercase tracking-[0.4em] text-purple-600">PayFlow Pro Hub</span>
-               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]"></div>
+               <span className="text-[12px] font-[1000] uppercase tracking-[0.4em] text-indigo-600">Zynctra Pro Hub</span>
+               <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_5px_#22d3ee]"></div>
                <span className="text-[12px] font-black uppercase tracking-widest text-black">{t('built_in_2025', user.country)}</span>
              </div>
              <p className="text-[11px] font-bold text-slate-800 uppercase tracking-widest text-center md:text-right">
@@ -295,7 +291,7 @@ const App: React.FC = () => {
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} country={user.country} />
       <div className="fixed bottom-28 md:bottom-12 right-6 md:right-12 flex flex-col gap-6 z-40">
         <button onClick={handleLogout} className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-3xl md:rounded-[2.5rem] shadow-2xl flex items-center justify-center text-rose-500 hover:bg-rose-50 transition-all border-2 border-rose-100 group active:scale-95" title={t('logout', user.country)}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg></button>
-        <button onClick={() => setIsAIChatOpen(!isAIChatOpen)} className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-purple-600 to-indigo-800 rounded-[2.5rem] md:rounded-[3rem] shadow-[0_30px_70px_rgba(147,51,234,0.4)] flex items-center justify-center text-white hover:scale-110 transition-all ring-8 ring-white active:scale-95"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></button>
+        <button onClick={() => setIsAIChatOpen(!isAIChatOpen)} className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-indigo-600 to-cyan-500 rounded-[2.5rem] md:rounded-[3rem] shadow-[0_30px_70px_rgba(79,70,229,0.4)] flex items-center justify-center text-white hover:scale-110 transition-all ring-8 ring-white active:scale-95"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></button>
       </div>
     </div>
   );

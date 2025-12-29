@@ -49,7 +49,7 @@ export const translations: Record<string, Record<'en' | 'fr', string>> = {
   feat_business_detail: { en: "Create invoices and pay your staff easily.", fr: "Créez des factures et payez votre personnel facilement." },
   feat_nearby_title: { en: 'Find Help Nearby', fr: 'Aide à Proximité' },
   feat_nearby_action: { en: 'FIND AGENTS', fr: 'TROUVER AGENTS' },
-  feat_nearby_detail: { en: "Need cash or assistance? Find the closest PayFlow agents.", fr: "Besoin d'argent ou d'aide ? Trouvez les agents PayFlow proches." },
+  feat_nearby_detail: { en: "Need cash or assistance? Find the closest Zynctra agents.", fr: "Besoin d'argent ou d'aide ? Trouvez les agents Zynctra proches." },
 
   // Grid Items
   grid_electricity: { en: 'Electricity', fr: 'Électricité' },
@@ -75,8 +75,8 @@ export const translations: Record<string, Record<'en' | 'fr', string>> = {
   grid_desc_gov: { en: 'Utility settlements', fr: 'Services Publics' },
 
   // About Page
-  about_title: { en: 'The PayFlow Protocol', fr: 'Le Protocole PayFlow' },
-  about_quote: { en: 'Engineering the financial future of West Africa, one transaction at a time.', fr: 'Façonner l\'avenir financier de l\'Afrique de l\'Ouest, une transaction à la fois.' },
+  about_title: { en: 'The Zynctra Protocol', fr: 'Le Protocole Zynctra' },
+  about_quote: { en: 'Engineering the financial future of West Africa, one node at a time.', fr: 'Façonner l\'avenir financier de l\'Afrique de l\'Ouest, un nœud à la fois.' },
   security: { en: 'Ironclad Security', fr: 'Sécurité d\'Acier' },
   usability: { en: 'Inclusive Design', fr: 'Conception Inclusive' },
   simplicity: { en: 'Total Simplicity', fr: 'Simplicité Totale' },

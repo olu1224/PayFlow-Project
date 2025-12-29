@@ -83,7 +83,7 @@ export async function editImage(imagePath: string, prompt: string) {
 export async function analyzeCreditScore(transactions: any[], userProfile: any) {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const lang = getLanguage(userProfile.country);
-  const prompt = `Analyze this user's financial health for a loan application. 
+  const prompt = `Analyze this user's financial health for a loan application on the Zynctra Pro hub. 
   Transactions: ${JSON.stringify(transactions)}
   Profile: ${JSON.stringify(userProfile)}
   
@@ -121,7 +121,7 @@ export async function analyzeCreditScore(transactions: any[], userProfile: any) 
 export async function generateBudgetStrategy(goals: any[], balance: number, currency: string, country: any) {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const lang = getLanguage(country);
-  const prompt = `Create a financial saving strategy for a user in ${currency}.
+  const prompt = `Create a financial saving strategy for a user in ${currency} on the Zynctra hub.
   Goals: ${JSON.stringify(goals)}
   Current Balance: ${balance} ${currency}
   RESPONSE LANGUAGE: ${lang === 'fr' ? 'FRENCH' : 'ENGLISH'}.
@@ -141,7 +141,7 @@ export const createAIChat = (country: any) => {
   return ai.chats.create({
     model: 'gemini-3-pro-preview',
     config: {
-      systemInstruction: `You are PayFlow AI, a helpful financial assistant for users in Nigeria, Ghana, and Senegal. ALWAYS RESPOND IN ${lang === 'fr' ? 'FRENCH' : 'ENGLISH'}.`,
+      systemInstruction: `You are Zynctra AI, an elite financial infrastructure assistant for users in Nigeria, Ghana, and Senegal. You help users command their money, pool transactions for lower fees, and manage crypto assets. ALWAYS RESPOND IN ${lang === 'fr' ? 'FRENCH' : 'ENGLISH'}.`,
     },
   });
 };
@@ -150,7 +150,7 @@ export async function findNearbyBanksOrAgents(location: { lat: number, lng: numb
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: `Find ${query} near these coordinates: ${location.lat}, ${location.lng}`,
+    contents: `Find ${query} near these coordinates on the Zynctra network: ${location.lat}, ${location.lng}`,
     config: {
       tools: [{ googleMaps: {} }],
       toolConfig: {
@@ -180,7 +180,7 @@ export const connectLiveAssistant = (callbacks: any, country: any) => {
       speechConfig: {
         voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
       },
-      systemInstruction: `You are a helpful voice assistant for PayFlow Pro. ALWAYS SPEAK IN ${lang === 'fr' ? 'FRENCH' : 'ENGLISH'}.`,
+      systemInstruction: `You are a helpful voice assistant for Zynctra Pro. ALWAYS SPEAK IN ${lang === 'fr' ? 'FRENCH' : 'ENGLISH'}.`,
     },
   });
 };

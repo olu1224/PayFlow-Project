@@ -78,13 +78,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceNam
   if (!isOpen) return null;
 
   const currencySymbol = currency === 'NGN' ? '₦' : currency === 'GHS' ? 'GH₵' : 'CFA';
-  
-  // Fee Calculation Logic for UI Preview
-  const getFee = (amt: number) => {
-    // Mock user tier logic for UI: usually we'd pass user object, but we assume market standard here
-    // Standard tier: 1.5%, min 100
-    return Math.max(100, amt * 0.015);
-  };
+  const getFee = (amt: number) => Math.max(100, amt * 0.015);
 
   const getProviderKey = (display: string) => {
     const d = display.toLowerCase();
@@ -136,93 +130,108 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceNam
   const currentFee = getFee(currentAmt);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-lg rounded-[3.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white">
-        <div className="relative h-48 overflow-hidden">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-300">
+      {/* Container locked to 82dvh to stay clear of browser chrome and bottom bars */}
+      <div className="bg-white w-full max-w-lg rounded-[2.5rem] sm:rounded-[3.5rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 flex flex-col h-[82dvh] sm:h-auto sm:max-h-[85dvh] border border-white/20">
+        
+        {/* Compact Header for mobile priority */}
+        <div className="relative h-[60px] sm:h-32 shrink-0 overflow-hidden">
           <img src={heroImage} className="w-full h-full object-cover" alt={serviceName} />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent"></div>
-          <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-white/20 backdrop-blur-md text-white hover:bg-white hover:text-slate-900 rounded-2xl transition-all border border-white/20">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-slate-950/10"></div>
+          <button 
+            onClick={onClose} 
+            className="absolute top-3 right-5 sm:top-6 sm:right-6 p-2 bg-black/40 backdrop-blur-md text-white hover:bg-white hover:text-slate-900 rounded-xl transition-all border border-white/20 z-[70]"
+            aria-label="Close modal"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <div className="p-10 -mt-6 relative z-10 bg-white rounded-t-[3rem]">
-          <div className="space-y-1 mb-8">
-            <h2 className="text-3xl font-black text-slate-950 tracking-tighter leading-none">{serviceName}</h2>
-            <p className="text-[10px] font-black text-purple-600 uppercase tracking-[0.3em]">{country} Hub</p>
-          </div>
+        {/* Title Area */}
+        <div className="px-6 pt-3 pb-1 shrink-0 border-b border-slate-50 bg-white">
+          <h2 className="text-xl sm:text-3xl font-black text-slate-950 tracking-tighter leading-none">{serviceName}</h2>
+          <p className="text-[7px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-[0.25em] mt-1">{country} Regional Node</p>
+        </div>
 
-          <div className="min-h-[320px]">
-            {isProcessing ? (
-              <div className="py-20 text-center space-y-6">
-                <div className="w-16 h-16 border-8 border-slate-100 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
-                <p className="text-sm font-black text-slate-950 uppercase tracking-widest">Processing Transaction...</p>
+        {/* Scrollable Body - min-h-0 is the flexbox secret to internal scrolling */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 custom-scrollbar bg-white">
+          {isProcessing ? (
+            <div className="py-12 text-center space-y-4">
+              <div className="w-12 h-12 border-4 border-slate-100 border-t-cyan-500 rounded-full animate-spin mx-auto"></div>
+              <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Broadcasting Settlement...</p>
+            </div>
+          ) : step === 1 ? (
+            <div className="space-y-2 pb-6">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Network Biller</p>
+              <div className="grid grid-cols-1 gap-2">
+                {providers.map(p => (
+                  <button 
+                    key={p} 
+                    onClick={() => setFormData({...formData, provider: p})} 
+                    className={`w-full text-left px-5 py-3 rounded-2xl border-2 transition-all active:scale-95 ${formData.provider === p ? 'border-cyan-500 bg-cyan-50 text-cyan-700 shadow-md ring-4 ring-cyan-100' : 'border-slate-50 bg-slate-50 text-slate-500 hover:border-slate-200'}`}
+                  >
+                    <span className="font-black text-xs leading-tight block">{p}</span>
+                  </button>
+                ))}
               </div>
-            ) : step === 1 ? (
-              <div className="space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Provider</p>
-                <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-                  {providers.map(p => (
-                    <button key={p} onClick={() => setFormData({...formData, provider: p})} className={`w-full text-left p-5 rounded-2xl border-2 transition-all ${formData.provider === p ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-slate-50 bg-slate-50 text-slate-600 hover:border-slate-200'}`}>
-                      <span className="font-black text-sm">{p}</span>
-                    </button>
-                  ))}
+            </div>
+          ) : step === 2 ? (
+            <div className="space-y-6 animate-in slide-in-from-right-4 pb-6">
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Account Reference / ID</label>
+                <input className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold text-slate-900 focus:border-indigo-600 outline-none transition-all shadow-inner" placeholder="Enter ID..." value={formData.account} onChange={e => setFormData({...formData, account: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Value ({currencySymbol})</label>
+                <input type="number" className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-black text-3xl text-slate-900 focus:border-indigo-600 outline-none transition-all tracking-tighter shadow-inner" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
+              </div>
+            </div>
+          ) : step === 3 ? (
+            <div className="space-y-4 animate-in slide-in-from-right-4 pb-6">
+              <div className="bg-slate-900 p-6 rounded-[2rem] text-white space-y-3 shadow-xl">
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-[9px] font-black uppercase text-slate-500">Node</span>
+                  <span className="font-black text-xs text-right truncate max-w-[150px]">{formData.provider}</span>
+                </div>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-[9px] font-black uppercase text-slate-500">Amount</span>
+                  <span className="font-black text-xs">{currencySymbol}{currentAmt.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-[9px] font-black uppercase text-cyan-400">Node Fee</span>
+                  <span className="font-black text-xs text-cyan-400">{currencySymbol}{currentFee.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between pt-2">
+                  <span className="text-[10px] font-black uppercase text-indigo-400">Total</span>
+                  <span className="text-xl font-black">{currencySymbol}{(currentAmt + currentFee).toLocaleString()}</span>
                 </div>
               </div>
-            ) : step === 2 ? (
-              <div className="space-y-6 animate-in slide-in-from-right-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Account / Meter Number</label>
-                  <input className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 font-black text-slate-900 focus:border-purple-600 outline-none transition-all" placeholder="Enter Reference ID..." value={formData.account} onChange={e => setFormData({...formData, account: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Amount ({currencySymbol})</label>
-                  <input type="number" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 font-black text-3xl text-slate-900 focus:border-purple-600 outline-none transition-all tracking-tighter" placeholder="0.00" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
-                </div>
-              </div>
-            ) : step === 3 ? (
-              <div className="space-y-6 animate-in slide-in-from-right-4">
-                <div className="bg-slate-950 p-8 rounded-[2.5rem] text-white space-y-4 shadow-2xl">
-                  <div className="flex justify-between border-b border-white/10 pb-4">
-                    <span className="text-[10px] font-black uppercase text-slate-500">Service</span>
-                    <span className="font-black text-sm">{formData.provider}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/10 pb-4">
-                    <span className="text-[10px] font-black uppercase text-slate-500">Principal</span>
-                    <span className="font-black text-sm">{currencySymbol}{currentAmt.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/10 pb-4">
-                    <span className="text-[10px] font-black uppercase text-rose-400">Processing Fee</span>
-                    <span className="font-black text-sm text-rose-400">{currencySymbol}{currentFee.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between pt-2">
-                    <span className="text-[12px] font-black uppercase text-purple-400">Total Settlement</span>
-                    <span className="text-2xl font-black">{currencySymbol}{(currentAmt + currentFee).toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl">
-                   <p className="text-[9px] text-amber-700 font-bold uppercase text-center tracking-widest leading-relaxed">Fees waived for <span className="text-purple-600">Elite Members</span>. Upgrade now to save.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="py-10 text-center space-y-6 animate-in zoom-in-95">
-                <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-inner"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6 9 17l-5-5"/></svg></div>
-                <h3 className="text-3xl font-black text-slate-950 tracking-tighter">Settlement Complete</h3>
-                <button onClick={onClose} className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-2xl">Close Portal</button>
-              </div>
-            )}
-          </div>
-
-          {step < 4 && !isProcessing && (
-            <div className="mt-8 space-y-4">
-              {error && <p className="text-rose-500 text-[10px] font-black uppercase text-center animate-bounce">{error}</p>}
-              <button onClick={handleNext} className="w-full bg-purple-600 text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-purple-500/20 hover:bg-purple-700 transition-all active:scale-95">
-                {step === 3 ? 'Authorize Payment' : 'Continue'}
-              </button>
+            </div>
+          ) : (
+            <div className="py-8 text-center space-y-6 animate-in zoom-in-95">
+              <div className="w-16 h-16 bg-cyan-50 text-cyan-500 rounded-full flex items-center justify-center mx-auto shadow-inner"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6 9 17l-5-5"/></svg></div>
+              <h3 className="text-xl font-black text-slate-950 tracking-tighter">Settlement Finalized</h3>
+              <button onClick={onClose} className="w-full bg-slate-950 text-white py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl active:scale-95">Close Portal</button>
             </div>
           )}
         </div>
+
+        {/* Locked Footer - Guaranteed visibility at the bottom of the 82dvh box */}
+        {step < 4 && !isProcessing && (
+          <div className="px-6 pb-10 pt-3 bg-white border-t border-slate-100 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-[60]">
+            {error && <p className="text-rose-500 text-[8px] font-black uppercase text-center mb-2 animate-pulse tracking-widest">{error}</p>}
+            <button 
+              onClick={handleNext} 
+              className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-[0_15px_40px_rgba(79,70,229,0.3)] hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              {step === 3 ? 'Authorize Payment' : 'Continue'}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+        )}
       </div>
+
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }

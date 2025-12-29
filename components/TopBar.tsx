@@ -36,9 +36,11 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
   ];
 
   return (
-    <div className="h-20 md:h-32 bg-white border-b border-slate-100 flex items-center justify-between px-4 md:px-12 z-50 sticky top-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] transition-all">
-      <div className="flex items-center gap-6 md:gap-10 flex-1 min-w-0">
-        <Logo size="sm" />
+    <div className="h-16 md:h-32 bg-white border-b border-slate-100 flex items-center justify-between px-3 md:px-12 z-50 sticky top-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] transition-all">
+      <div className="flex items-center gap-4 md:gap-10 flex-1 min-w-0">
+        <div className="scale-75 md:scale-100 origin-left">
+          <Logo size="sm" />
+        </div>
         
         <nav className="hidden xl:flex items-center gap-2 p-1.5 bg-slate-50 rounded-full border border-slate-200 overflow-x-auto no-scrollbar">
            {navItems.map(item => (
@@ -60,32 +62,32 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
         </nav>
       </div>
       
-      <div className="flex items-center gap-3 md:gap-6 shrink-0 ml-4">
+      <div className="flex items-center gap-2 md:gap-6 shrink-0 ml-2">
         <button 
           onClick={() => setActiveTab('membership')} 
-          className={`px-5 md:px-8 py-3.5 md:py-4.5 rounded-full font-black text-[11px] md:text-[12px] uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl border-2 ${
+          className={`px-3 md:px-8 py-2 md:py-4.5 rounded-full font-black text-[9px] md:text-[12px] uppercase tracking-[0.1em] md:tracking-[0.2em] transition-all flex items-center gap-2 md:gap-3 shadow-lg md:shadow-xl border-2 ${
             activeTab === 'membership' 
               ? 'bg-indigo-600 text-white border-indigo-400' 
               : 'bg-white text-indigo-700 border-indigo-100 hover:bg-indigo-50 hover:border-indigo-200'
           }`}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="animate-pulse hidden sm:block"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-          {user.creditScore > 700 ? t('nav_elite', user.country) : t('nav_membership', user.country)}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="animate-pulse hidden sm:block"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          <span className="truncate max-w-[60px] sm:max-w-none">{user.creditScore > 700 ? t('nav_elite', user.country) : t('nav_membership', user.country)}</span>
         </button>
 
         <button 
           onClick={() => setShowCountryPicker(!showCountryPicker)}
-          className="flex items-center gap-3 px-4 py-3.5 rounded-full border-2 border-slate-100 bg-white shadow-lg transition-all font-black group shrink-0 hover:border-purple-200"
+          className="flex items-center gap-2 px-2.5 py-2 rounded-full border-2 border-slate-100 bg-white shadow-md md:shadow-lg transition-all font-black group shrink-0 hover:border-purple-200"
         >
-          <span className="text-xl md:text-2xl group-hover:scale-125 transition-transform">{currentCountry?.flag}</span>
+          <span className="text-lg md:text-2xl group-hover:scale-110 transition-transform">{currentCountry?.flag}</span>
           <span className="hidden sm:inline text-black uppercase tracking-[0.2em] text-[10px] md:text-[11px]">{currentCountry?.name}</span>
         </button>
       </div>
 
       {showCountryPicker && (
-        <div className="absolute top-[110%] right-4 md:right-12 w-72 md:w-80 bg-white rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] border border-slate-100 py-6 z-[100] animate-in slide-in-from-top-4 duration-500 ring-4 ring-black/5 p-2">
-          <p className="px-8 pb-4 text-[10px] font-black uppercase text-purple-600 tracking-[0.3em]">{t('select_grid', user.country)}</p>
-          <div className="space-y-1.5">
+        <div className="absolute top-[110%] right-3 md:right-12 w-64 md:w-80 bg-white rounded-[2rem] md:rounded-[3rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] border border-slate-100 py-4 md:py-6 z-[100] animate-in slide-in-from-top-4 duration-500 ring-4 ring-black/5 p-2">
+          <p className="px-6 md:px-8 pb-3 md:pb-4 text-[9px] md:text-[10px] font-black uppercase text-purple-600 tracking-[0.3em]">{t('select_grid', user.country)}</p>
+          <div className="space-y-1">
             {countries.map(c => (
               <button 
                 key={c.name}
@@ -93,22 +95,22 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
                   onUpdateCountry(c.name);
                   setShowCountryPicker(false);
                 }}
-                className={`w-full flex items-center justify-between px-8 py-5 text-sm font-black transition-all rounded-[2rem] group ${
+                className={`w-full flex items-center justify-between px-6 md:px-8 py-4 md:py-5 text-xs md:text-sm font-black transition-all rounded-[1.5rem] md:rounded-[2rem] group ${
                   user.country === c.name 
                     ? 'bg-purple-600 text-white shadow-2xl scale-[1.02]' 
                     : 'text-black hover:bg-slate-50'
                 }`}
               >
-                <div className="flex items-center gap-5">
-                  <span className={`text-base font-black uppercase w-8 transition-colors ${user.country === c.name ? 'text-white' : 'text-purple-600'}`}>
+                <div className="flex items-center gap-4 md:gap-5">
+                  <span className={`text-sm md:text-base font-black uppercase w-6 md:w-8 transition-colors ${user.country === c.name ? 'text-white' : 'text-purple-600'}`}>
                     {c.code}
                   </span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl drop-shadow-md group-hover:scale-110 transition-transform">{c.flag}</span>
-                    <span className="text-base tracking-tight">{c.name}</span>
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <span className="text-xl md:text-2xl drop-shadow-md group-hover:scale-110 transition-transform">{c.flag}</span>
+                    <span className="tracking-tight">{c.name}</span>
                   </div>
                 </div>
-                {user.country === c.name && <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]"></div>}
+                {user.country === c.name && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]"></div>}
               </button>
             ))}
           </div>

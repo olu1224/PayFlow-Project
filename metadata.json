@@ -1,6 +1,6 @@
 {
-  "name": "PayFlow Pro - Pan-African Financial Hub",
-  "description": "An elite financial management application for Nigeria, Ghana, and Senegal. Pay all bills (MPN), transfer funds, buy/sell crypto, and generate studio-grade AI assets.",
+  "name": "Zynctra Pro - Pan-African Financial Infrastructure",
+  "description": "The unique financial settlement node for Nigeria, Ghana, and Senegal. Command your liquidity, settle all bills (MPN), and manage the regional financial grid.",
   "requestFramePermissions": [
     "microphone",
     "geolocation",
