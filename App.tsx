@@ -56,6 +56,31 @@ const App: React.FC = () => {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [agents, setAgents] = useState<AIAgent[]>([]);
 
+  // Robust Deep Link / Hash Scan Handler
+  useEffect(() => {
+    const handleUrlProtocol = () => {
+      // Check standard search params OR hash fragment params
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.split('?')[1]);
+      
+      const node = searchParams.get('node') || hashParams.get('node');
+      const amt = searchParams.get('amt') || hashParams.get('amt');
+      
+      if (node && amt && user) {
+        const confirmed = window.confirm(`Authorize Zynctra Handshake with ${node.replace(/\+/g, ' ')} for ${user.currency} ${parseFloat(amt).toLocaleString()}?`);
+        if (confirmed) {
+          handleNewTransaction(-parseFloat(amt), `Settlement: ${node.replace(/\+/g, ' ')}`, 'Grid Payment');
+          // Reset URL to clean state
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    };
+
+    handleUrlProtocol();
+    window.addEventListener('hashchange', handleUrlProtocol);
+    return () => window.removeEventListener('hashchange', handleUrlProtocol);
+  }, [user?.uid]);
+
   useEffect(() => {
     if (!user) return;
     const uid = user.uid;
@@ -85,7 +110,6 @@ const App: React.FC = () => {
     localStorage.setItem(`zynctra_${uid}_goals`, JSON.stringify(goals));
     localStorage.setItem(`zynctra_${uid}_beneficiaries`, JSON.stringify(beneficiaries));
     localStorage.setItem(`zynctra_${uid}_agents`, JSON.stringify(agents));
-    // Persist current user state for card/balance updates
     localStorage.setItem('zynctra_user_session', JSON.stringify(user));
   }, [transactions, trades, portfolio, goals, beneficiaries, agents, user, user?.uid]);
 
@@ -93,8 +117,7 @@ const App: React.FC = () => {
     if (!user) return 0;
     if (user.creditScore >= 700) return 0;
     if (amount < 0) {
-      const fee = Math.max(100, Math.abs(amount) * 0.015);
-      return fee;
+      return Math.max(100, Math.abs(amount) * 0.015);
     }
     return 0;
   };
