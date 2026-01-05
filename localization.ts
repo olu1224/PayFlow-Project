@@ -62,6 +62,7 @@ export const translations: Record<string, Record<'en' | 'fr', string>> = {
   grid_transport: { en: 'Transport', fr: 'Transport' },
   grid_betting: { en: 'Betting', fr: 'Jeux & Paris' },
   grid_gov: { en: 'Gov Services', fr: 'Services Publics' },
+  grid_international: { en: 'International', fr: 'International' },
 
   grid_desc_electricity: { en: 'Pay for light', fr: 'Payer le courant' },
   grid_desc_internet: { en: 'Data & Fiber', fr: 'Data & Fibre' },

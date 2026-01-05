@@ -266,7 +266,8 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (!user) return null;
     switch (activeTab) {
-      case 'dashboard': return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={(amt) => setUser(prev => prev ? {...prev, balance: prev.balance - amt} : null)} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} onTabChange={setActiveTab} onUpdateSecurity={handleUpdateSecurity} onUpdateUser={handleUpdateUser} />;
+      case 'dashboard': 
+        return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={(amt) => setUser(prev => prev ? {...prev, balance: prev.balance - amt} : null)} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} onTabChange={setActiveTab} onUpdateSecurity={handleUpdateSecurity} onUpdateUser={handleUpdateUser} />;
       case 'history': return <History user={user} transactions={transactions} />;
       case 'loans': return <LoansPage user={user} transactions={transactions} onNewTransaction={handleNewTransaction} />;
       case 'crypto': return <CryptoHub user={user} portfolio={portfolio} trades={trades} onTrade={handleTrade} onWithdrawCrypto={handleWithdrawCrypto} />;

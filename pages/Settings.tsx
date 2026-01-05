@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User, Country, Currency } from '../types';
 
 interface SettingsProps {
@@ -10,6 +10,26 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ user, onUpdateCountry, onUpdateSecurity }) => {
   const [activeSubTab, setActiveSubTab] = useState<'profile' | 'security' | 'preferences'>('profile');
+  const [showCountryDrop, setShowCountryDrop] = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropRef.current && !dropRef.current.contains(event.target as Node)) {
+        setShowCountryDrop(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const countries: { name: Country; flag: string; symbol: string; code: string }[] = [
+    { name: 'Nigeria', flag: '🇳🇬', symbol: '₦', code: 'NGN' },
+    { name: 'Ghana', flag: '🇬🇭', symbol: 'GH₵', code: 'GHS' },
+    { name: 'Senegal', flag: '🇸🇳', symbol: 'CFA', code: 'XOF' },
+  ];
+
+  const currentCountry = countries.find(c => c.name === user.country);
 
   const SectionTitle = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
     <div className="flex items-start gap-6 mb-10">
@@ -60,18 +80,53 @@ const Settings: React.FC<SettingsProps> = ({ user, onUpdateCountry, onUpdateSecu
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="space-y-4">
+              <div className="space-y-4 relative" ref={dropRef}>
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Regional Grid Access</label>
-                <select className="w-full bg-white border-2 border-slate-100 rounded-[2.2rem] px-8 py-6 font-black text-slate-900 focus:border-purple-600 outline-none transition-all shadow-sm appearance-none" value={user.country} onChange={(e) => onUpdateCountry(e.target.value as Country)}>
-                  <option value="Nigeria">🇳🇬 Nigeria</option>
-                  <option value="Ghana">🇬🇭 Ghana</option>
-                  <option value="Senegal">🇸🇳 Senegal</option>
-                </select>
+                <button 
+                  onClick={() => setShowCountryDrop(!showCountryDrop)}
+                  className="w-full bg-white border-2 border-slate-100 rounded-[2.2rem] px-8 py-6 font-black text-slate-900 focus:border-purple-600 outline-none transition-all shadow-sm flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl group-hover:scale-110 transition-transform">{currentCountry?.flag}</span>
+                    <div className="text-left">
+                       <p className="leading-none">{currentCountry?.name}</p>
+                       <p className="text-[9px] text-slate-400 mt-1 uppercase font-black">{currentCountry?.code} Node active</p>
+                    </div>
+                  </div>
+                  <svg className={`w-5 h-5 text-slate-300 transition-transform ${showCountryDrop ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+
+                {showCountryDrop && (
+                  <div className="absolute top-[100%] left-0 right-0 mt-3 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 p-3 z-50 animate-in slide-in-from-top-4">
+                    <div className="space-y-1">
+                      {countries.map(c => (
+                        <button 
+                          key={c.name}
+                          onClick={() => { onUpdateCountry(c.name); setShowCountryDrop(false); }}
+                          className={`w-full flex items-center justify-between px-6 py-5 rounded-[1.8rem] transition-all ${user.country === c.name ? 'bg-purple-600 text-white shadow-xl' : 'text-slate-600 hover:bg-slate-50'}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <span className="text-2xl">{c.flag}</span>
+                            <div className="text-left">
+                              <p className="font-black text-sm leading-none">{c.name}</p>
+                              <p className={`text-[8px] font-black uppercase mt-1.5 ${user.country === c.name ? 'text-purple-200' : 'text-slate-400'}`}>{c.code} Terminal</p>
+                            </div>
+                          </div>
+                          {user.country === c.name && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6 9 17l-5-5"/></svg>}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Native Ledger Currency</label>
-                <div className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-[2.2rem] px-8 py-6 font-black text-slate-400 cursor-not-allowed">
-                  {user.currency === 'NGN' ? 'Nigerian Naira (₦)' : user.currency === 'GHS' ? 'Ghanaian Cedi (GH₵)' : 'West African CFA (XOF)'}
+                <div className="w-full bg-slate-100/50 border-2 border-slate-100 rounded-[2.2rem] px-8 py-6 font-black text-slate-400 cursor-not-allowed flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-lg shadow-sm">{currentCountry?.symbol}</div>
+                  <div className="text-left">
+                     <p className="leading-none">{currentCountry?.code}</p>
+                     <p className="text-[9px] text-slate-300 mt-1 uppercase font-black">Region Locked</p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -39,6 +39,11 @@ const PROVIDERS: Record<string, Record<string, string[]>> = {
     'Ghana': ['MTN MoMo', 'Telecel Cash', 'G-Money', 'Standard Chartered', 'Fidelity Bank GH'],
     'Senegal': ['Wave Sénégal', 'Orange Money', 'Free Money', 'UBA Sénégal', 'Ecobank SN']
   },
+  'International': {
+    'Nigeria': ['Western Union (Global)', 'MoneyGram International', 'WorldRemit Nigeria', 'LemFi (UK/US/CA)', 'Sendwave', 'Ria Money Transfer'],
+    'Ghana': ['MTN Global Payout', 'Western Union GH', 'UnityLink', 'ExpressPay Global', 'WorldRemit GH'],
+    'Senegal': ['Wari Global', 'Orange Money International', 'Western Union SN', 'MoneyGram SN', 'Joni Joni Global']
+  },
   'Gov Services': {
     'Nigeria': ['NIN Card Payment (NIMC)', 'Remita (TSA)', 'LIRS Tax', 'FIRS Tax', 'FRSC Pin', 'JAMB Pin'],
     'Ghana': ['Ghana.gov', 'GRA Tax', 'SSNIT Payments', 'Passport Fees'],
@@ -90,6 +95,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceNam
     if (d.includes('gov')) return 'Gov Services';
     if (d.includes('bett')) return 'Betting';
     if (d.includes('transport')) return 'Transport';
+    if (d.includes('inter')) return 'International';
     return 'Transfer';
   };
 
@@ -100,6 +106,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceNam
       case 'TV': return "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&q=80&w=800";
       case 'Food': return "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=800";
       case 'Gov Services': return "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=800";
+      case 'International': return "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=800";
       default: return "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&q=80&w=800";
     }
   };
