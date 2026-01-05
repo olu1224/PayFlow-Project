@@ -79,6 +79,10 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({ isOpen, onClose, user }) =>
               {/* Node Card Block - Matches Reference Image */}
               <div className="bg-slate-50 p-6 md:p-10 rounded-[2.5rem] border border-slate-100 flex flex-col items-center shadow-inner">
                 <div className="bg-white p-6 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-50 mb-8 relative">
+                  {/* Demo Indicator */}
+                  <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg z-10 animate-pulse">
+                    Demo Active
+                  </div>
                   <img 
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(zynctraPayload)}`} 
                     alt="Protocol QR" 
@@ -89,6 +93,7 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({ isOpen, onClose, user }) =>
                 <div className="text-center space-y-1.5 mb-8">
                   <p className="font-[1000] text-slate-900 text-lg uppercase tracking-tight">Active Settle Node</p>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{currencySymbol}{parseFloat(requestAmount || '0').toLocaleString()} Requested</p>
+                  <p className="text-[8px] text-slate-400 font-medium italic mt-2">Use 'Scan Demo QR' in the Scan portal to test this node.</p>
                 </div>
 
                 <div className="flex gap-3 w-full">
