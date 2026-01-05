@@ -1,6 +1,6 @@
 {
   "name": "Zynctra Pro - Pan-African Financial Infrastructure",
-  "description": "The unique financial settlement node for Nigeria, Ghana, and Senegal. Command your liquidity, settle all bills (MPN), and manage the regional financial grid.",
+  "description": "The unique financial settlement node for Nigeria, Ghana, and Senegal. Command your liquidity, scan QR to pay at stores, and use Tap-to-Pay digital wallet.",
   "requestFramePermissions": [
     "microphone",
     "geolocation",

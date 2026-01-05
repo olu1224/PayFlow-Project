@@ -5,6 +5,8 @@ import ServiceModal from '../components/ServiceModal';
 import DepositModal from '../components/DepositModal';
 import WithdrawModal from '../components/WithdrawModal';
 import ReceiveModal from '../components/ReceiveModal';
+import ScanPayModal from '../components/ScanPayModal';
+import DigitalWalletModal from '../components/DigitalWalletModal';
 import { ICONS } from '../constants';
 import { t } from '../localization';
 
@@ -20,15 +22,18 @@ interface DashboardProps {
   onNearbyClick: () => void;
   onTabChange: (tab: string) => void;
   onUpdateSecurity: (updates: Partial<User['security']>) => void;
+  onUpdateUser: (updates: Partial<User>) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransaction, onDeposit, onWithdraw, onExplorePlanning, onNearbyClick, onTabChange, onUpdateSecurity }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransaction, onDeposit, onWithdraw, onExplorePlanning, onNearbyClick, onTabChange, onUpdateSecurity, onUpdateUser }) => {
   const [activeFeature, setActiveFeature] = useState<FeatureKey>('bills');
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isReceiveOpen, setIsReceiveOpen] = useState(false);
+  const [isScanOpen, setIsScanOpen] = useState(false);
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -125,6 +130,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
     onUpdateSecurity({ hideBalances: !user.security.hideBalances });
   };
 
+  const handleAddCard = (newCard: any) => {
+    const updatedCards = [...(user.storedCards || []), { ...newCard, id: Date.now().toString() }];
+    onUpdateUser({ storedCards: updatedCards });
+  };
+
   return (
     <div className="space-y-4 md:space-y-12 max-w-[1600px] mx-auto pb-32 animate-in fade-in duration-1000 px-3 sm:px-12">
       
@@ -153,11 +163,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
                    </h2>
                 </div>
                 
-                <div className="hidden sm:flex flex-col gap-4">
-                   <div className="bg-white/10 backdrop-blur-2xl p-6 rounded-[2rem] border border-white/20 w-fit">
-                      <p className="text-[9px] font-black text-purple-300 uppercase tracking-widest mb-1">Live Intelligence</p>
-                      <p className="text-white text-xs font-bold leading-tight max-w-[200px]">Utility nodes are 100% active in your region. Settlement latency: &lt;2s.</p>
-                   </div>
+                <div className="flex flex-row gap-3">
+                   <button 
+                     onClick={() => setIsScanOpen(true)}
+                     className="bg-white/10 backdrop-blur-2xl px-5 py-4 rounded-[1.5rem] border border-white/20 hover:bg-white/20 transition-all flex items-center gap-3 active:scale-95 group"
+                   >
+                     <div className="text-indigo-400 group-hover:scale-110 transition-transform">
+                       {ICONS.Scan}
+                     </div>
+                     <div className="text-left hidden sm:block">
+                        <p className="text-[9px] font-black text-white uppercase tracking-widest leading-none">Scan & Pay</p>
+                        <p className="text-white/40 text-[7px] font-black uppercase mt-1">Retail Stores</p>
+                     </div>
+                   </button>
+                   <button 
+                     onClick={() => setIsWalletOpen(true)}
+                     className="bg-white/10 backdrop-blur-2xl px-5 py-4 rounded-[1.5rem] border border-white/20 hover:bg-white/20 transition-all flex items-center gap-3 active:scale-95 group"
+                   >
+                     <div className="text-cyan-400 group-hover:scale-110 transition-transform">
+                       {ICONS.Tap}
+                     </div>
+                     <div className="text-left hidden sm:block">
+                        <p className="text-[9px] font-black text-white uppercase tracking-widest leading-none">Wallet Tap</p>
+                        <p className="text-white/40 text-[7px] font-black uppercase mt-1">NFC Terminals</p>
+                     </div>
+                   </button>
                 </div>
              </div>
           </div>
@@ -221,7 +251,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
                 {user.security.hideBalances ? (
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 ) : (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8-11-8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8-11-8-11-8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 )}
                 <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest">{user.security.hideBalances ? 'Stealth' : 'Privacy'}</span>
               </button>
@@ -400,6 +430,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
           isOpen={true} 
           onClose={() => setIsReceiveOpen(false)} 
           user={user} 
+        />
+      )}
+
+      {isScanOpen && (
+        <ScanPayModal 
+          isOpen={true} 
+          onClose={() => setIsScanOpen(false)} 
+          onComplete={(amt, merchant) => onNewTransaction(-amt, `QR Pay: ${merchant}`, 'Express Pay')}
+        />
+      )}
+
+      {isWalletOpen && (
+        <DigitalWalletModal 
+          isOpen={true} 
+          onClose={() => setIsWalletOpen(false)} 
+          user={user}
+          onAddCard={handleAddCard}
         />
       )}
 

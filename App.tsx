@@ -85,7 +85,9 @@ const App: React.FC = () => {
     localStorage.setItem(`zynctra_${uid}_goals`, JSON.stringify(goals));
     localStorage.setItem(`zynctra_${uid}_beneficiaries`, JSON.stringify(beneficiaries));
     localStorage.setItem(`zynctra_${uid}_agents`, JSON.stringify(agents));
-  }, [transactions, trades, portfolio, goals, beneficiaries, agents, user?.uid]);
+    // Persist current user state for card/balance updates
+    localStorage.setItem('zynctra_user_session', JSON.stringify(user));
+  }, [transactions, trades, portfolio, goals, beneficiaries, agents, user, user?.uid]);
 
   const calculateServiceFee = (amount: number) => {
     if (!user) return 0;
@@ -120,14 +122,17 @@ const App: React.FC = () => {
     let curr: Currency = country === 'Ghana' ? 'GHS' : country === 'Senegal' ? 'XOF' : 'NGN';
     const updated = { ...user, country, currency: curr };
     setUser(updated);
-    localStorage.setItem('zynctra_user_session', JSON.stringify(updated));
   };
 
   const handleUpdateSecurity = (updates: Partial<User['security']>) => {
     if (!user) return;
     const updated = { ...user, security: { ...user.security, ...updates } };
     setUser(updated);
-    localStorage.setItem('zynctra_user_session', JSON.stringify(updated));
+  };
+
+  const handleUpdateUser = (updates: Partial<User>) => {
+    if (!user) return;
+    setUser({ ...user, ...updates });
   };
 
   const handleUpdateWealth = (updates: Partial<User['wealth']>) => {
@@ -144,7 +149,6 @@ const App: React.FC = () => {
       } 
     };
     setUser(updated);
-    localStorage.setItem('zynctra_user_session', JSON.stringify(updated));
   };
 
   const handleUpdateGoal = (goalId: string, amount: number) => {
@@ -239,7 +243,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (!user) return null;
     switch (activeTab) {
-      case 'dashboard': return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={(amt) => setUser(prev => prev ? {...prev, balance: prev.balance - amt} : null)} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} onTabChange={setActiveTab} onUpdateSecurity={handleUpdateSecurity} />;
+      case 'dashboard': return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={(amt) => setUser(prev => prev ? {...prev, balance: prev.balance - amt} : null)} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} onTabChange={setActiveTab} onUpdateSecurity={handleUpdateSecurity} onUpdateUser={handleUpdateUser} />;
       case 'history': return <History user={user} transactions={transactions} />;
       case 'loans': return <LoansPage user={user} transactions={transactions} onNewTransaction={handleNewTransaction} />;
       case 'crypto': return <CryptoHub user={user} portfolio={portfolio} trades={trades} onTrade={handleTrade} onWithdrawCrypto={handleWithdrawCrypto} />;
@@ -251,7 +255,7 @@ const App: React.FC = () => {
       case 'membership': return <Membership user={user} onUpgrade={(plan) => setUser(prev => prev ? {...prev, creditScore: 800} : null)} />;
       case 'ai-gen': return <AiAgentsPage user={user} agents={agents} setAgents={setAgents} />;
       case 'deal-forge': return <DealForge user={user} />;
-      default: return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={(amt) => setUser(prev => prev ? {...prev, balance: prev.balance - amt} : null)} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} onTabChange={setActiveTab} onUpdateSecurity={handleUpdateSecurity} />;
+      default: return <Dashboard user={user} transactions={transactions} onNewTransaction={handleNewTransaction} onDeposit={handleDeposit} onWithdraw={(amt) => setUser(prev => prev ? {...prev, balance: prev.balance - amt} : null)} onExplorePlanning={() => setActiveTab('money-hub')} onNearbyClick={() => setActiveTab('nearby')} onTabChange={setActiveTab} onUpdateSecurity={handleUpdateSecurity} onUpdateUser={handleUpdateUser} />;
     }
   };
 

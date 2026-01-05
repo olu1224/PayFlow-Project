@@ -2,6 +2,15 @@
 export type Country = 'Nigeria' | 'Ghana' | 'Senegal';
 export type Currency = 'NGN' | 'GHS' | 'XOF';
 
+export interface StoredCard {
+  id: string;
+  type: 'visa' | 'mastercard' | 'verve';
+  last4: string;
+  expiry: string;
+  color: string;
+  brandName: string;
+}
+
 export interface User {
   uid: string;
   name: string;
@@ -25,6 +34,7 @@ export interface User {
     marketing: boolean;
     dailyLimit: number;
   };
+  storedCards?: StoredCard[];
   wealth?: {
     emergencyFund: {
       tier1: number; // Instant Access

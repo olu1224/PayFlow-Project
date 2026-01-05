@@ -2,12 +2,18 @@
 import React from 'react';
 
 export const COLORS = {
-  primary: '#9333ea', // purple-600
-  secondary: '#fdf4ff', // purple-50
-  accent: '#7c3aed', // purple-700
+  primary: '#4f46e5', // indigo-600
+  secondary: '#f0fdfa', // cyan-50
+  accent: '#06b6d4', // cyan-500
 };
 
 export const ICONS = {
+  Scan: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/><path d="M12 7v10"/></svg>
+  ),
+  Tap: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 7V5"/><path d="M12 19v-2"/><path d="M17 12h2"/><path d="M5 12h2"/></svg>
+  ),
   Electricity: (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
   ),
