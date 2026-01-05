@@ -66,6 +66,14 @@ export const translations: Record<string, Record<'en' | 'fr', string>> = {
   recent_activity: { en: 'Recent Activity', fr: 'Activité Récente' },
   audit_history: { en: 'Audit History', fr: 'Historique' },
 
+  // About
+  about_title: { en: 'Zynctra Pro', fr: 'Zynctra Pro' },
+  about_quote: { en: 'The Pan-African financial infrastructure for high-velocity settlements.', fr: 'L\'infrastructure financière panafricaine pour les règlements à grande vitesse.' },
+  security: { en: 'Security', fr: 'Sécurité' },
+  usability: { en: 'Usability', fr: 'Utilisabilité' },
+  simplicity: { en: 'Simplicity', fr: 'Simplicité' },
+  mission_statement: { en: 'Mission Statement', fr: 'Déclaration de Mission' },
+
   // Onboarding
   plan: { en: 'Plan', fr: 'Plan' },
   define_identity: { en: 'Define your identity on the hub.', fr: 'Définissez votre identité sur le hub.' },
@@ -83,7 +91,6 @@ export const t = (key: string, country: Country): string => {
   const result = translations[key]?.[lang];
   
   if (!result) {
-    // Fail gracefully: clean up key name for display if missing
     return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
   

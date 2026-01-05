@@ -8,7 +8,6 @@ import BudgetPage from './pages/BudgetPage';
 import History from './pages/History';
 import Settings from './pages/Settings';
 import AboutPage from './pages/AboutPage';
-import InvestmentPortfolio from './pages/InvestmentPortfolio';
 import NearbyHub from './pages/NearbyHub';
 import B2BPortal from './pages/B2BPortal';
 import Membership from './pages/Membership';
@@ -47,31 +46,10 @@ const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [recurringPayments, setRecurringPayments] = useState<RecurringPayment[]>([]);
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [goals, setGoals] = useState<BudgetGoal[]>([]);
   const [portfolio, setPortfolio] = useState<CryptoAsset[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [agents, setAgents] = useState<AIAgent[]>([]);
-
-  useEffect(() => {
-    const handleUrlProtocol = () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.split('?')[1]);
-      const node = searchParams.get('node') || hashParams.get('node');
-      const amt = searchParams.get('amt') || hashParams.get('amt');
-      if (node && amt && user) {
-        const confirmed = window.confirm(`Authorize Zynctra Handshake with ${node.replace(/\+/g, ' ')} for ${user.currency} ${parseFloat(amt).toLocaleString()}?`);
-        if (confirmed) {
-          handleNewTransaction(-parseFloat(amt), `Settlement: ${node.replace(/\+/g, ' ')}`, 'Grid Payment');
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }
-    };
-    handleUrlProtocol();
-    window.addEventListener('hashchange', handleUrlProtocol);
-    return () => window.removeEventListener('hashchange', handleUrlProtocol);
-  }, [user?.uid]);
 
   useEffect(() => {
     if (!user) return;
@@ -81,8 +59,6 @@ const App: React.FC = () => {
       return saved ? JSON.parse(saved) : defaultValue;
     };
     setTransactions(loadData('txs', []));
-    setRecurringPayments(loadData('recurring', []));
-    setBeneficiaries(loadData('beneficiaries', []));
     setGoals(loadData('goals', []));
     setPortfolio(loadData('portfolio', [
       { id: 'btc', name: 'Bitcoin', symbol: 'BTC', amount: 0.45, valueUsd: 42350 },
@@ -100,15 +76,9 @@ const App: React.FC = () => {
     localStorage.setItem(`zynctra_${uid}_trades`, JSON.stringify(trades));
     localStorage.setItem(`zynctra_${uid}_portfolio`, JSON.stringify(portfolio));
     localStorage.setItem(`zynctra_${uid}_goals`, JSON.stringify(goals));
-    localStorage.setItem(`zynctra_${uid}_beneficiaries`, JSON.stringify(beneficiaries));
     localStorage.setItem(`zynctra_${uid}_agents`, JSON.stringify(agents));
     localStorage.setItem('zynctra_user_session', JSON.stringify(user));
-  }, [transactions, trades, portfolio, goals, beneficiaries, agents, user]);
-
-  const calculateServiceFee = (amount: number) => {
-    if (!user || user.creditScore >= 700) return 0;
-    return amount < 0 ? Math.max(100, Math.abs(amount) * 0.015) : 0;
-  };
+  }, [transactions, trades, portfolio, goals, agents, user]);
 
   const handleOnboardingComplete = (newUser: User) => {
     setUser(newUser);
@@ -161,10 +131,10 @@ const App: React.FC = () => {
 
   const handleNewTransaction = (amount: number, name: string, category: string = 'General') => {
     if (!user) return;
-    const fee = calculateServiceFee(amount);
+    const fee = amount < 0 ? Math.max(100, Math.abs(amount) * 0.015) : 0;
     const totalDeduction = amount - fee;
     if (user.balance < Math.abs(totalDeduction)) {
-      alert(`Insufficient balance. Transaction: ${Math.abs(amount)}, Service Fee: ${fee}`);
+      alert(`Insufficient balance.`);
       return;
     }
     const newTx: Transaction = { 
@@ -175,17 +145,6 @@ const App: React.FC = () => {
     };
     setTransactions([newTx, ...transactions]);
     setUser(prev => prev ? ({ ...prev, balance: prev.balance + totalDeduction }) : null);
-    if (fee > 0) {
-      setTransactions(prev => [{
-        id: 'fee_' + Math.random().toString(36).substr(2, 5),
-        name: `Service Fee: ${name}`,
-        category: 'Service Fee',
-        amount: fee,
-        date: 'Just now',
-        status: 'completed',
-        type: 'debit'
-      }, ...prev]);
-    }
   };
 
   const handleDeposit = (amount: number, method: string) => {
@@ -225,18 +184,21 @@ const App: React.FC = () => {
     <div className="flex min-h-[100dvh] flex-col bg-[#FDFDFD] overflow-hidden font-['Inter'] relative">
       <TopBar user={user} activeTab={activeTab} setActiveTab={setActiveTab} onOpenNotifications={() => {}} onOpenSettings={() => setActiveTab('settings')} onUpdateCountry={switchCountry} />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <div className="flex-1 overflow-y-auto scroll-smooth relative z-10 p-4 md:p-12 pb-40">
-          {renderContent()}
-          <div className="mt-20 pt-20 border-t-2 border-slate-50">
+        <div className="flex-1 overflow-y-auto scroll-smooth relative z-10 p-4 md:p-12 pb-20">
+          <div className="max-w-[1400px] mx-auto animate-in fade-in duration-700">
+            {renderContent()}
+          </div>
+          {/* Integrated About Section with tighter margins */}
+          <div className="mt-8 pt-8 border-t border-slate-100">
              <AboutPage user={user} />
           </div>
-          <footer className="max-w-[1200px] mx-auto pt-20 pb-10 px-4 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-slate-100 mt-20 opacity-60">
+          <footer className="max-w-[1200px] mx-auto pt-12 pb-10 px-4 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-slate-100 mt-12 opacity-60">
              <div className="flex items-center gap-4">
-               <span className="text-[12px] font-[1000] uppercase tracking-[0.4em] text-indigo-600">Zynctra Pro Hub</span>
-               <div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>
-               <span className="text-[12px] font-black uppercase tracking-widest text-black">2025 Architecture</span>
+               <span className="text-[10px] font-[1000] uppercase tracking-[0.4em] text-indigo-600">Zynctra Pro Hub</span>
+               <div className="w-1 h-1 rounded-full bg-cyan-500"></div>
+               <span className="text-[10px] font-black uppercase tracking-widest text-black">2025 Grid Node</span>
              </div>
-             <p className="text-[11px] font-bold text-slate-800 uppercase tracking-widest text-center md:text-right">
+             <p className="text-[10px] font-bold text-slate-800 uppercase tracking-widest text-center md:text-right">
                Secure regional infrastructure node
              </p>
           </footer>
@@ -245,8 +207,8 @@ const App: React.FC = () => {
         <VoiceAssistant user={user} isOpen={isVoiceAssistantOpen} onClose={() => setIsVoiceAssistantOpen(false)} />
       </main>
       <div className="fixed bottom-12 right-6 md:right-12 flex flex-col gap-6 z-40">
-        <button onClick={handleLogout} className="w-16 h-16 bg-white rounded-3xl shadow-2xl flex items-center justify-center text-rose-500 border-2 border-rose-100 group active:scale-95"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg></button>
-        <button onClick={() => setIsAIChatOpen(!isAIChatOpen)} className="w-20 h-20 bg-gradient-to-br from-indigo-600 to-cyan-500 rounded-[2.5rem] shadow-[0_30px_70px_rgba(79,70,229,0.4)] flex items-center justify-center text-white hover:scale-110 transition-all ring-8 ring-white active:scale-95"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></button>
+        <button onClick={handleLogout} className="w-14 h-14 bg-white rounded-2xl shadow-2xl flex items-center justify-center text-rose-500 border-2 border-rose-100 group active:scale-95 transition-all"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg></button>
+        <button onClick={() => setIsAIChatOpen(!isAIChatOpen)} className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-cyan-500 rounded-[2rem] shadow-[0_30px_70px_rgba(79,70,229,0.4)] flex items-center justify-center text-white hover:scale-110 transition-all ring-4 ring-white active:scale-95"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></button>
       </div>
     </div>
   );

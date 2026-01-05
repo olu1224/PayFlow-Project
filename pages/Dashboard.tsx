@@ -61,77 +61,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
     { id: 'International', label: 'Global Pay', icon: ICONS.International, color: 'bg-zinc-900 text-white' }
   ];
 
-  const featureConfigs: Record<FeatureKey, { 
-    title: string, 
-    color: string, 
-    icon: React.ReactNode, 
-    detail: string, 
-    action: string,
-    image: string 
-  }> = {
-    bills: { 
-      title: t('bills_title', user.country), 
-      color: 'bg-amber-500', 
-      action: t('bills_action', user.country), 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>, 
-      detail: t('bills_desc', user.country),
-      image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&q=80&w=1200"
-    },
-    transfer: { 
-      title: t('transfer_title', user.country), 
-      color: 'bg-emerald-500', 
-      action: t('transfer_action', user.country), 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="m18 8-4-4-4 4"/><path d="M14 4v12a4 4 0 0 1-4 4H4"/></svg>, 
-      detail: t('transfer_desc', user.country),
-      image: "https://images.unsplash.com/photo-1556740714-a8395b3bf30f?auto=format&fit=crop&q=80&w=1200"
-    },
-    savings: { 
-      title: t('savings_title', user.country), 
-      color: 'bg-purple-600', 
-      action: t('savings_action', user.country), 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, 
-      detail: t('savings_desc', user.country),
-      image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=1200"
-    },
-    crypto: { 
-      title: t('crypto_title', user.country), 
-      color: 'bg-blue-500', 
-      action: t('crypto_action', user.country), 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>, 
-      detail: t('crypto_desc', user.country),
-      image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&q=80&w=1200"
-    },
-    business: { 
-      title: t('business_title', user.country), 
-      color: 'bg-indigo-600', 
-      action: t('business_action', user.country), 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M3 10h18"/></svg>, 
-      detail: t('business_desc', user.country),
-      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1200"
-    },
-    nearby: { 
-      title: t('nearby_title', user.country), 
-      color: 'bg-rose-500', 
-      action: t('nearby_action', user.country), 
-      icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>, 
-      detail: t('nearby_desc', user.country),
-      image: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1200"
-    }
-  };
-
-  const handleAction = () => {
-    if (activeFeature === 'bills') setSelectedService('Electricity');
-    else if (activeFeature === 'transfer') setSelectedService('Transfer');
-    else if (activeFeature === 'savings') onExplorePlanning();
-    else if (activeFeature === 'crypto') onTabChange('crypto');
-    else if (activeFeature === 'business') onTabChange('b2b');
-    else if (activeFeature === 'nearby') onNearbyClick();
-  };
-
   return (
-    <div className="space-y-6 md:space-y-12 max-w-[1400px] mx-auto pb-40 animate-in fade-in duration-700 px-2 md:px-12">
+    <div className="space-y-6 md:space-y-12 max-w-[1400px] mx-auto pb-12 animate-in fade-in duration-700 px-2 md:px-12">
       
-      {/* 1. THE VAULT CARD (PRIMARY START) */}
+      {/* 1. THE VAULT CARD */}
       <section className="bg-slate-950 rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-20 text-white relative overflow-hidden shadow-2xl group border border-white/5 mx-1 md:mx-0 mt-4">
         <div className="absolute top-[-30%] right-[-5%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-indigo-600 rounded-full blur-[80px] md:blur-[120px] opacity-20 transition-all duration-[4s]"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-12 text-center md:text-left">
@@ -152,7 +85,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
         </div>
       </section>
 
-      {/* 2. COMMAND BAR (SEND, REQUEST, SCAN, WALLET) */}
+      {/* 2. COMMAND BAR */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
          <button onClick={() => setSelectedService('Transfer')} className="bg-white p-4 md:p-10 rounded-2xl md:rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center gap-3 md:gap-6 hover:border-indigo-500 transition-all active:scale-95 group">
             <div className="w-10 h-10 md:w-16 md:h-16 bg-indigo-50 text-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
@@ -195,123 +128,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
          </button>
       </section>
 
-      {/* 3. WELCOME WIDGET (BANNER) */}
-      <section className="bg-white rounded-[2rem] md:rounded-[3.5rem] border border-slate-100 shadow-xl overflow-hidden group mx-1 md:mx-0">
-        <div className="flex flex-col md:flex-row">
-          <div className="md:w-[35%] relative overflow-hidden h-32 md:h-auto shrink-0 bg-slate-100">
-             <img key={activeFeature} src={featureConfigs[activeFeature].image} className="absolute inset-0 w-full h-full object-cover saturate-[0.7] brightness-[0.7]" alt="Banner" />
-             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-slate-950/90 via-slate-950/40 to-transparent"></div>
-             <div className="absolute inset-0 p-4 md:p-12 flex flex-col justify-end md:justify-start gap-1 md:gap-2">
-                <p className="text-[8px] md:text-[12px] font-black text-indigo-400 uppercase tracking-widest md:tracking-[0.4em]">{greeting}</p>
-                <h3 className="text-lg md:text-5xl font-[1000] text-white leading-tight tracking-tighter">{user.name.split(' ')[0]} - {t('workspace', user.country)}</h3>
-             </div>
-          </div>
-
-          <div className="flex-1 p-5 md:p-20 space-y-6 md:space-y-12 flex flex-col justify-center">
-            <div className="space-y-2 md:space-y-4">
-              <div className="flex items-center gap-3 md:gap-8">
-                 <div className={`w-10 h-10 md:w-20 md:h-20 ${featureConfigs[activeFeature].color} rounded-xl md:rounded-[2rem] flex items-center justify-center text-white shadow-lg md:shadow-2xl`}>
-                    {featureConfigs[activeFeature].icon}
-                 </div>
-                 <h4 className="text-xl md:text-5xl font-[1000] text-slate-900 tracking-tighter leading-none">{featureConfigs[activeFeature].title}</h4>
+      {/* 3. GRID OF SERVICES */}
+      <section className="space-y-6 md:space-y-10">
+        <div className="flex items-center justify-between px-2 md:px-0">
+          <h2 className="text-xl md:text-3xl font-[1000] text-slate-900 tracking-tight">{t('universal_grid', user.country)}</h2>
+          <button onClick={() => setIsGridExpanded(!isGridExpanded)} className="text-[10px] md:text-xs font-black text-indigo-600 uppercase tracking-widest hover:underline transition-all">
+            {isGridExpanded ? 'Collapse Grid' : 'Expand All'}
+          </button>
+        </div>
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-8">
+          {(isGridExpanded ? gridItems : gridItems.slice(0, 8)).map(item => (
+            <button 
+              key={item.id} 
+              onClick={() => setSelectedService(item.id)}
+              className="bg-white p-4 md:p-10 rounded-2xl md:rounded-[3rem] border border-slate-50 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all active:scale-95 group"
+            >
+              <div className={`w-10 h-10 md:w-20 md:h-20 ${item.color} rounded-xl md:rounded-[2rem] flex items-center justify-center mb-3 md:mb-8 transition-transform group-hover:scale-110 group-hover:rotate-3 mx-auto shadow-inner`}>
+                <div className="scale-75 md:scale-125">{item.icon}</div>
               </div>
-              <p className="text-sm md:text-2xl text-slate-500 font-medium leading-relaxed max-w-2xl">
-                {featureConfigs[activeFeature].detail}
-              </p>
-            </div>
-
-            <div className="space-y-4 md:space-y-8">
-              <div className="flex gap-1 md:gap-2 p-1 bg-slate-50 rounded-xl md:rounded-2xl border border-slate-100 overflow-x-auto no-scrollbar scroll-smooth">
-                 {(['bills', 'transfer', 'savings', 'crypto', 'business', 'nearby'] as const).map(key => (
-                   <button 
-                     key={key} 
-                     onClick={() => setActiveFeature(key)}
-                     className={`px-4 md:px-8 py-2 md:py-4 rounded-lg md:rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-widest transition-all shrink-0 whitespace-nowrap ${activeFeature === key ? 'bg-white text-indigo-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
-                   >
-                     {t(`${key}_title`, user.country)}
-                   </button>
-                 ))}
-              </div>
-              
-              <button 
-                onClick={handleAction}
-                className="w-full md:w-fit px-12 py-4 md:py-7 bg-slate-900 text-white rounded-xl md:rounded-[2rem] font-[1000] text-[10px] md:text-sm uppercase tracking-[0.2em] md:tracking-[0.4em] shadow-2xl hover:bg-indigo-600 transition-all active:scale-95"
-              >
-                {featureConfigs[activeFeature].action}
-              </button>
-            </div>
-          </div>
+              <p className="text-[8px] md:text-[11px] font-black text-slate-900 uppercase text-center leading-tight tracking-tighter md:tracking-widest">{item.label}</p>
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* 4. UNIVERSAL GRID SECTION */}
-      <section className="bg-white p-6 md:p-20 rounded-[2.5rem] md:rounded-[4rem] border border-slate-100 shadow-sm mx-1 md:mx-0">
-         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 md:mb-20 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-indigo-600"></div>
-                <h3 className="text-xl md:text-5xl font-[1000] text-slate-900 tracking-tighter leading-none">{t('universal_grid', user.country)}</h3>
-              </div>
-              <p className="text-[10px] md:text-[14px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.4em] leading-none ml-4 md:ml-6">{t('mpn_subtitle', user.country)}</p>
-            </div>
-            <button 
-              onClick={() => setIsGridExpanded(!isGridExpanded)}
-              className="px-8 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-600 hover:bg-white hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm flex items-center gap-3 active:scale-95"
-            >
-              {isGridExpanded ? 'Show Less' : 'Explore Grid'}
-              <svg className={`transition-transform duration-300 ${isGridExpanded ? 'rotate-180' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
-         </div>
-
-         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-12">
-            {(isGridExpanded ? gridItems : gridItems.slice(0, 6)).map((item, idx) => (
-              <button 
-                key={item.id} 
-                onClick={() => setSelectedService(item.id)}
-                className="flex flex-col items-center gap-3 md:gap-6 group p-4 md:p-8 rounded-[2.5rem] md:rounded-[4rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: `${idx * 50}ms` }}
-              >
-                <div className={`w-14 h-14 md:w-32 md:h-32 rounded-[2rem] md:rounded-[3.5rem] flex items-center justify-center transition-all group-hover:scale-110 shadow-sm ${item.color} group-hover:shadow-2xl`}>
-                   {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement<any>, { width: 32, height: 32, className: "md:w-12 md:h-12" }) : item.icon}
-                </div>
-                <div className="text-center space-y-1">
-                   <p className="text-[9px] md:text-[14px] font-[1000] uppercase text-slate-800 tracking-wider md:tracking-[0.3em] truncate w-full group-hover:text-indigo-600 transition-colors">{item.label}</p>
-                </div>
-              </button>
-            ))}
-         </div>
-      </section>
-
-      {/* 5. RECENT ACTIVITY SECTION */}
-      <div className="bg-white rounded-[2.5rem] md:rounded-[4rem] border border-slate-100 shadow-sm p-6 md:p-20 mx-1 md:mx-0">
-         <div className="flex items-center justify-between mb-8 md:mb-16 px-1">
-            <div className="space-y-1 md:space-y-2">
-               <h3 className="text-xl md:text-5xl font-[1000] text-slate-900 tracking-tighter leading-none">{t('recent_activity', user.country)}</h3>
-            </div>
-            <button onClick={() => onTabChange('history')} className="px-5 md:px-10 py-2.5 md:py-4 bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl font-[1000] text-[10px] md:text-[12px] uppercase tracking-widest md:tracking-[0.2em] text-slate-600 hover:text-indigo-600 transition-all shadow-sm">{t('audit_history', user.country)}</button>
-         </div>
-         <div className="space-y-2 md:space-y-4">
-           {transactions.slice(0, 5).map(tx => (
-             <div key={tx.id} className="p-4 md:p-10 flex items-center justify-between rounded-2xl md:rounded-[2.5rem] bg-slate-50 border border-transparent hover:border-slate-200 transition-all group shadow-sm">
-                <div className="flex items-center gap-3 md:gap-8 min-w-0">
-                  <div className={`w-10 h-10 md:w-16 md:h-16 rounded-xl md:rounded-[1.5rem] flex items-center justify-center shrink-0 shadow-md ${tx.type === 'credit' ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-slate-400'}`}>
-                     {tx.type === 'credit' ? '+' : '-'}
-                  </div>
-                  <div className="min-w-0">
-                    <p className={`font-[1000] text-slate-800 text-sm md:text-2xl truncate leading-none mb-1.5 md:mb-3`}>{tx.name}</p>
-                    <p className="text-[8px] md:text-[12px] text-slate-400 font-black uppercase tracking-widest md:tracking-[0.25em] leading-none truncate">{tx.date} • {tx.category}</p>
-                  </div>
-                </div>
-                <div className="text-right shrink-0 ml-3">
-                   <p className={`font-[1000] text-sm md:text-3xl tracking-tighter ${tx.type === 'credit' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                     {tx.type === 'credit' ? '+' : '-'}{currencySymbol}{tx.amount.toLocaleString()}
-                   </p>
-                </div>
-             </div>
-           ))}
-         </div>
-      </div>
-
+      {/* MODALS */}
       {selectedService && (
         <ServiceModal 
           isOpen={true} 
@@ -320,17 +161,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
           country={user.country}
           currency={user.currency}
           onComplete={(amt, name) => {
-             onNewTransaction(-amt, name, selectedService);
-             setSelectedService(null);
+            onNewTransaction(-amt, name, selectedService);
+            setSelectedService(null);
           }}
         />
       )}
-
-      {isDepositOpen && <DepositModal isOpen={true} onClose={() => setIsDepositOpen(false)} user={user} onDeposit={(amt, m) => { onDeposit(amt, m); setIsDepositOpen(false); }} />}
-      {isWithdrawOpen && <WithdrawModal isOpen={true} onClose={() => setIsWithdrawOpen(false)} currency={user.currency} country={user.country} balance={user.balance} onWithdraw={(amt, dest) => { onWithdraw(amt, dest); onNewTransaction(-amt, `Withdrawal: ${dest}`, 'Transfer'); setIsWithdrawOpen(false); }} />}
+      
+      {isDepositOpen && <DepositModal isOpen={true} onClose={() => setIsDepositOpen(false)} user={user} onDeposit={onDeposit} />}
+      {isWithdrawOpen && <WithdrawModal isOpen={true} onClose={() => setIsWithdrawOpen(false)} user={user} balance={user.balance} currency={user.currency} country={user.country} onWithdraw={onWithdraw} />}
       {isReceiveOpen && <ReceiveModal isOpen={true} onClose={() => setIsReceiveOpen(false)} user={user} />}
-      {isScanOpen && <ScanPayModal isOpen={true} onClose={() => setIsScanOpen(false)} onComplete={(amt, merchant) => onNewTransaction(-amt, `QR Pay: ${merchant}`, 'Express Pay')} />}
-      {isWalletOpen && <DigitalWalletModal isOpen={true} onClose={() => setIsWalletOpen(false)} user={user} onAddCard={(c) => onUpdateUser({storedCards: [...(user.storedCards || []), {...c, id: Date.now().toString()}]})} />}
+      {isScanOpen && <ScanPayModal isOpen={true} onClose={() => setIsScanOpen(false)} onComplete={(amt, merch) => onNewTransaction(-amt, merch, 'Point of Sale')} />}
+      {isWalletOpen && <DigitalWalletModal isOpen={true} onClose={() => setIsWalletOpen(false)} user={user} onAddCard={(c) => onUpdateUser({ storedCards: [...(user.storedCards || []), { ...c, id: Date.now().toString() }] })} />}
     </div>
   );
 };
