@@ -16,6 +16,7 @@ interface TopBarProps {
 const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNotifications, onOpenSettings, onUpdateCountry }) => {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [showIDModal, setShowIDModal] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const countries: { name: Country; flag: string; code: string; currency: string; symbol: string }[] = [
     { name: 'Nigeria', flag: '🇳🇬', code: 'NG', currency: 'NGN', symbol: '₦' },
@@ -31,11 +32,33 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
     { id: 'loans', label: t('nav_loans', user.country), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="M2 9V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1"/></svg> },
     { id: 'crypto', label: t('nav_crypto', user.country), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg> },
     { id: 'deal-forge', label: t('nav_forge', user.country), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> },
-    { id: 'membership', label: 'Elite Plan', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> },
+    { id: 'membership', label: t('nav_membership', user.country), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> },
     { id: 'history', label: t('history', user.country), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg> },
   ];
 
   const idPayload = `${window.location.origin}${window.location.pathname}#/settle?node=${user.name.replace(/\s+/g, '+')}&country=${user.country}`;
+
+  const handleShareNode = async () => {
+    const shareData = {
+      title: 'PayFlow Pro Identity',
+      text: `Connect with me on the PayFlow regional financial grid. My Node: ${user.name}`,
+      url: idPayload,
+    };
+
+    if (navigator.share) {
+      try {
+        setIsSharing(true);
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Share failed', err);
+      } finally {
+        setIsSharing(false);
+      }
+    } else {
+      navigator.clipboard.writeText(idPayload);
+      alert('Node Link copied to clipboard');
+    }
+  };
 
   return (
     <div className="h-20 md:h-32 bg-white border-b border-slate-100 flex items-center justify-between px-3 md:px-12 z-50 sticky top-0 shadow-sm transition-all">
@@ -90,8 +113,8 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
           {showCountryPicker && (
             <div className="absolute top-[calc(100%+12px)] right-0 w-72 bg-white rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.15)] border border-slate-100 p-3 z-[100] animate-in slide-in-from-top-4 duration-300">
               <div className="px-5 py-4 border-b border-slate-50 mb-2">
-                <p className="text-[10px] font-black uppercase text-indigo-600 tracking-[0.3em]">Switch Financial Node</p>
-                <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">Multi-Region Settlements</p>
+                <p className="text-[10px] font-black uppercase text-indigo-600 tracking-[0.3em]">{t('switch_node', user.country)}</p>
+                <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">{t('multi_region', user.country)}</p>
               </div>
               <div className="space-y-1.5">
                 {countries.map(c => (
@@ -117,9 +140,6 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
                   </button>
                 ))}
               </div>
-              <div className="mt-3 p-4 bg-slate-50 rounded-[1.8rem] text-center border border-slate-100">
-                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Region impacts ledger currency & fees</p>
-              </div>
             </div>
           )}
         </div>
@@ -130,8 +150,8 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
            <div className="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl border border-white animate-in zoom-in-95">
               <div className="flex justify-between items-center mb-8">
                  <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none">Node ID</h3>
-                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Active Scan Mode</p>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{t('node_id', user.country)}</h3>
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{t('active_scan', user.country)}</p>
                  </div>
                  <button onClick={() => setShowIDModal(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-all"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
               </div>
@@ -144,6 +164,18 @@ const TopBar: React.FC<TopBarProps> = ({ user, activeTab, setActiveTab, onOpenNo
                     <p className="font-black text-slate-800 text-lg leading-tight">{user.name}</p>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{user.country} Financial Node</p>
                  </div>
+              </div>
+
+              <div className="mt-8 space-y-3">
+                <button 
+                  onClick={handleShareNode}
+                  disabled={isSharing}
+                  className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-600 transition-all active:scale-95 shadow-xl"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                  {t('share_profile', user.country)}
+                </button>
+                <p className="text-[8px] font-medium text-slate-400 text-center uppercase tracking-widest">{t('share_via', user.country)}</p>
               </div>
            </div>
         </div>

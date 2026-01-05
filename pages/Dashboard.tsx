@@ -134,15 +134,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
   return (
     <div className="space-y-6 md:space-y-12 max-w-[1400px] mx-auto pb-40 animate-in fade-in duration-700 px-2 md:px-12">
       
-      {/* 1. TOP COMMAND BAR: Send, Receive, Scan, Tap */}
+      {/* 1. TOP COMMAND BAR */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
          <button onClick={() => setSelectedService('Transfer')} className="bg-white p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-3 md:gap-5 hover:border-indigo-500 transition-all active:scale-95 group">
             <div className="w-10 h-10 md:w-14 md:h-14 bg-indigo-50 text-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
               <svg className="w-5 h-5 md:w-7 md:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="m18 8-4-4-4 4"/><path d="M14 4v12a4 4 0 0 1-4 4H4"/></svg>
             </div>
             <div className="text-left min-w-0">
-              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">Send</p>
-              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">Money</p>
+              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">{t('send', user.country)}</p>
+              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">{t('money', user.country)}</p>
             </div>
          </button>
 
@@ -151,8 +151,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
                <svg className="w-5 h-5 md:w-7 md:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
             </div>
             <div className="text-left min-w-0">
-              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">Request</p>
-              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">Funds</p>
+              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">{t('request', user.country)}</p>
+              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">{t('funds', user.country)}</p>
             </div>
          </button>
 
@@ -161,8 +161,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
                <div className="scale-75 md:scale-100">{ICONS.Scan}</div>
             </div>
             <div className="text-left min-w-0">
-              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">Scan</p>
-              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">Store QR</p>
+              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">{t('scan', user.country)}</p>
+              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">{t('store_qr', user.country)}</p>
             </div>
          </button>
 
@@ -171,13 +171,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
                <div className="scale-75 md:scale-100">{ICONS.Tap}</div>
             </div>
             <div className="text-left min-w-0">
-              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">Wallet</p>
-              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">Tap to Pay</p>
+              <p className="text-[9px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.2em] leading-none mb-1 md:mb-2">{t('wallet', user.country)}</p>
+              <p className="font-black text-slate-900 text-xs md:text-xl truncate tracking-tight">{t('tap_to_pay', user.country)}</p>
             </div>
          </button>
       </section>
 
-      {/* 2. THE VAULT CARD (BALANCE AREA) */}
+      {/* 2. THE VAULT CARD */}
       <section className="bg-slate-950 rounded-[2rem] md:rounded-[3rem] p-6 md:p-16 text-white relative overflow-hidden shadow-2xl group border border-white/5">
         <div className="absolute top-[-30%] right-[-5%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-indigo-600 rounded-full blur-[80px] md:blur-[120px] opacity-20 transition-all duration-[4s]"></div>
         
@@ -185,7 +185,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
           <div className="space-y-2 md:space-y-4 w-full md:w-auto">
             <div className="flex items-center justify-center md:justify-start gap-2 md:gap-4">
               <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
-              <p className="text-[9px] md:text-[12px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-slate-400 leading-none">{t('wallet_balance', user.country)}</p>
+              <p className="text-[9px] md:text-[12px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-slate-400 leading-none">{t('vault_balance', user.country)}</p>
               
               <button 
                 onClick={toggleStealth}
@@ -202,26 +202,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
           </div>
 
           <div className="flex flex-row gap-2 md:gap-4 w-full md:w-auto">
-            <button onClick={() => setIsWithdrawOpen(true)} className="flex-1 md:w-44 bg-white/5 border md:border-2 border-white/10 py-3 md:py-5 rounded-xl md:rounded-2xl font-[1000] text-[9px] md:text-[12px] uppercase tracking-widest md:tracking-[0.3em] transition-all hover:bg-white/10 active:scale-95">Withdraw</button>
-            <button onClick={() => setIsDepositOpen(true)} className="flex-1 md:w-44 bg-white text-slate-900 py-3 md:py-5 rounded-xl md:rounded-2xl font-[1000] text-[9px] md:text-[12px] uppercase tracking-widest md:tracking-[0.3em] transition-all hover:bg-slate-100 active:scale-95 shadow-xl">Add Cash</button>
+            <button onClick={() => setIsWithdrawOpen(true)} className="flex-1 md:w-44 bg-white/5 border md:border-2 border-white/10 py-3 md:py-5 rounded-xl md:rounded-2xl font-[1000] text-[9px] md:text-[12px] uppercase tracking-widest md:tracking-[0.3em] transition-all hover:bg-white/10 active:scale-95">{t('withdraw', user.country)}</button>
+            <button onClick={() => setIsDepositOpen(true)} className="flex-1 md:w-44 bg-white text-slate-900 py-3 md:py-5 rounded-xl md:rounded-2xl font-[1000] text-[9px] md:text-[12px] uppercase tracking-widest md:tracking-[0.3em] transition-all hover:bg-slate-100 active:scale-95 shadow-xl">{t('add_cash', user.country)}</button>
           </div>
         </div>
       </section>
 
-      {/* 3. WELCOME WIDGET / MODULE SELECTOR */}
+      {/* 3. WELCOME WIDGET */}
       <section className="bg-white rounded-[2rem] md:rounded-[3rem] border border-slate-100 shadow-xl overflow-hidden group mx-1 md:mx-0">
         <div className="flex flex-col md:flex-row">
           <div className="md:w-[35%] relative overflow-hidden h-32 md:h-auto shrink-0 bg-slate-100">
              <img 
                key={activeFeature}
                src={featureConfigs[activeFeature].image} 
-               alt={activeFeature} 
                className="absolute inset-0 w-full h-full object-cover saturate-[0.7] brightness-[0.7]"
              />
              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-slate-950/90 via-slate-950/40 to-transparent"></div>
              <div className="absolute inset-0 p-4 md:p-10 flex flex-col justify-end md:justify-start gap-1 md:gap-2">
                 <p className="text-[8px] md:text-[12px] font-black text-indigo-400 uppercase tracking-widest md:tracking-[0.4em]">{greeting}</p>
-                <h3 className="text-lg md:text-4xl font-[1000] text-white leading-tight tracking-tight">{user.name.split(' ')[0]}'s Workspace</h3>
+                <h3 className="text-lg md:text-4xl font-[1000] text-white leading-tight tracking-tight">{user.name.split(' ')[0]} - {t('workspace', user.country)}</h3>
              </div>
           </div>
 
@@ -246,7 +245,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
                      onClick={() => setActiveFeature(key)}
                      className={`px-4 md:px-8 py-2 md:py-4 rounded-lg md:rounded-xl font-black text-[9px] md:text-[12px] uppercase tracking-widest transition-all shrink-0 whitespace-nowrap ${activeFeature === key ? 'bg-white text-indigo-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
                    >
-                     {key}
+                     {key === 'bills' ? t('feat_bills_title', user.country).split(' ')[0] : key}
                    </button>
                  ))}
               </div>
@@ -266,10 +265,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
       <section className="bg-white p-5 md:p-16 rounded-[2rem] md:rounded-[3.5rem] border border-slate-100 shadow-sm mx-1 md:mx-0">
          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 md:mb-12 gap-4 md:gap-6">
             <div className="space-y-1 md:space-y-2">
-              <h3 className="text-xl md:text-4xl font-[1000] text-slate-900 tracking-tighter leading-none">Universal Grid</h3>
+              <h3 className="text-xl md:text-4xl font-[1000] text-slate-900 tracking-tighter leading-none">{t('universal_grid', user.country)}</h3>
               <p className="text-[9px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.4em] leading-none">{t('mpn_subtitle', user.country)}</p>
             </div>
-            <button onClick={() => setShowCategoryPicker(true)} className="px-5 md:px-8 py-2.5 md:py-3.5 bg-slate-50 border border-slate-100 rounded-xl font-[1000] text-[10px] md:text-[11px] uppercase tracking-widest md:tracking-[0.2em] text-indigo-600 hover:bg-indigo-50 transition-all">Expand Grid</button>
+            <button onClick={() => setShowCategoryPicker(true)} className="px-5 md:px-8 py-2.5 md:py-3.5 bg-slate-50 border border-slate-100 rounded-xl font-[1000] text-[10px] md:text-[11px] uppercase tracking-widest md:tracking-[0.2em] text-indigo-600 hover:bg-indigo-50 transition-all">{t('expand_grid', user.country)}</button>
          </div>
          
          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-8">
@@ -288,44 +287,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
          </div>
       </section>
 
-      {/* Grid Expand Modal - Fixed Scroll Issue */}
-      {showCategoryPicker && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl animate-in fade-in duration-300">
-           <div className="bg-white w-full max-w-5xl rounded-[2.5rem] md:rounded-[4rem] p-6 md:p-16 shadow-2xl border border-white animate-in zoom-in-95 duration-300 flex flex-col max-h-[90dvh]">
-              <div className="flex justify-between items-center mb-8 md:mb-12 shrink-0">
-                 <div className="space-y-1 md:space-y-2">
-                    <h2 className="text-2xl md:text-4xl font-[1000] text-slate-900 tracking-tighter leading-none">Grid Interface</h2>
-                    <p className="text-[9px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.4em] leading-none">Global Terminal</p>
-                 </div>
-                 <button onClick={() => setShowCategoryPicker(false)} className="p-3 md:p-4 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-2xl md:rounded-[1.5rem] transition-all border border-slate-100"><svg className="w-6 h-6 md:w-8 md:h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 overflow-y-auto pr-2 md:pr-4 custom-scrollbar flex-1 pb-6 overscroll-contain">
-                 {gridItems.map(item => (
-                    <button 
-                      key={item.id} 
-                      onClick={() => { setSelectedService(item.id); setShowCategoryPicker(false); }}
-                      className="group flex flex-col items-center gap-3 md:gap-4 p-5 md:p-8 rounded-[1.5rem] md:rounded-[3rem] hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100"
-                    >
-                       <div className={`w-16 h-16 md:w-32 md:h-32 rounded-2xl md:rounded-[2.5rem] ${item.color} flex items-center justify-center transition-all group-hover:scale-105 shadow-sm`}>
-                          {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement<any>, { width: 28, height: 28, className: "md:w-11 md:h-11" }) : item.icon}
-                       </div>
-                       <p className="font-black text-[9px] md:text-[12px] uppercase tracking-widest md:tracking-[0.3em] text-slate-800 text-center leading-tight">{item.label}</p>
-                    </button>
-                 ))}
-              </div>
-           </div>
-        </div>
-      )}
-
       {/* 5. RECENT ACTIVITY SECTION */}
       <div className="bg-white rounded-[2rem] md:rounded-[3.5rem] border border-slate-100 shadow-sm p-6 md:p-16 mx-1 md:mx-0">
          <div className="flex items-center justify-between mb-8 md:mb-12 px-1">
             <div className="space-y-1 md:space-y-2">
-               <h3 className="text-xl md:text-4xl font-[1000] text-slate-900 tracking-tighter leading-none">Recent Activity</h3>
-               <p className="text-[9px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.4em] leading-none">Terminal Logs</p>
+               <h3 className="text-xl md:text-4xl font-[1000] text-slate-900 tracking-tighter leading-none">{t('recent_activity', user.country)}</h3>
+               <p className="text-[9px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest md:tracking-[0.4em] leading-none">{t('terminal_logs', user.country)}</p>
             </div>
-            <button onClick={() => onTabChange('history')} className="px-4 md:px-8 py-2 md:py-3.5 bg-slate-50 border border-slate-100 rounded-xl font-[1000] text-[10px] md:text-[11px] uppercase tracking-widest md:tracking-[0.2em] text-slate-600 hover:text-indigo-600 transition-all">Audit History</button>
+            <button onClick={() => onTabChange('history')} className="px-4 md:px-8 py-2 md:py-3.5 bg-slate-50 border border-slate-100 rounded-xl font-[1000] text-[10px] md:text-[11px] uppercase tracking-widest md:tracking-[0.2em] text-slate-600 hover:text-indigo-600 transition-all">{t('audit_history', user.country)}</button>
          </div>
          
          <div className="space-y-2 md:space-y-3">
@@ -354,7 +323,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
          </div>
       </div>
 
-      {/* Rendering common modals */}
       {selectedService && (
         <ServiceModal 
           isOpen={true} 

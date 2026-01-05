@@ -11,19 +11,35 @@ interface ReceiveModalProps {
 const ReceiveModal: React.FC<ReceiveModalProps> = ({ isOpen, onClose, user }) => {
   const [activeMethod, setActiveMethod] = useState<'transfer' | 'link'>('link');
   const [requestAmount, setRequestAmount] = useState('100000');
-  const [isCopied, setIsCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   if (!isOpen) return null;
 
   const currencySymbol = user.currency === 'NGN' ? '₦' : user.currency === 'GHS' ? 'GH₵' : 'CFA';
   const baseUrl = window.location.origin + window.location.pathname;
   const zynctraPayload = `${baseUrl}#/settle?node=${user.name.replace(/\s+/g, '+')}&amt=${requestAmount || '0'}&curr=${user.currency}`;
-  const paymentLink = `https://zynctra.pro/pay/${user.name.replace(/\s+/g, '').toLowerCase()}${parseFloat(requestAmount) > 0 ? `?amount=${requestAmount}` : ''}`;
+  const displayAmount = parseFloat(requestAmount || '0').toLocaleString();
+  
+  const handleShareRequest = async () => {
+    const shareData = {
+      title: 'PayFlow Payment Request',
+      text: `Please settle ${user.currency} ${displayAmount} to my PayFlow node. Access the grid here:`,
+      url: zynctraPayload,
+    };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(paymentLink);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    if (navigator.share) {
+      try {
+        setIsSharing(true);
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Sharing failed', err);
+      } finally {
+        setIsSharing(false);
+      }
+    } else {
+      navigator.clipboard.writeText(zynctraPayload);
+      alert('Payment link copied to clipboard');
+    }
   };
 
   return (
@@ -92,17 +108,18 @@ const ReceiveModal: React.FC<ReceiveModalProps> = ({ isOpen, onClose, user }) =>
                 
                 <div className="text-center space-y-1.5 mb-8">
                   <p className="font-[1000] text-slate-900 text-lg uppercase tracking-tight">Active Settle Node</p>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{currencySymbol}{parseFloat(requestAmount || '0').toLocaleString()} Requested</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{currencySymbol}{displayAmount} Requested</p>
                   <p className="text-[8px] text-slate-400 font-medium italic mt-2">Use 'Scan Demo QR' in the Scan portal to test this node.</p>
                 </div>
 
                 <div className="flex gap-3 w-full">
                   <button 
-                    onClick={handleCopy}
+                    onClick={handleShareRequest}
+                    disabled={isSharing}
                     className="flex-1 bg-white border border-slate-200 text-slate-700 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-50 transition-all active:scale-95"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                    {isCopied ? 'Copied' : 'Secure Link'}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                    Share Request
                   </button>
                   <button 
                     onClick={() => setRequestAmount('')}

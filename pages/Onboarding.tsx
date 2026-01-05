@@ -9,24 +9,20 @@ interface OnboardingProps {
 }
 
 const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
-  // mode can be 'choice', 'signup', or 'login'
   const [mode, setMode] = useState<'choice' | 'signup' | 'login'>(() => {
-    return localStorage.getItem('payflow_user_session') ? 'login' : 'choice';
+    return localStorage.getItem('zynctra_user_session') ? 'login' : 'choice';
   });
   
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
   
-  // Persistent Cache - Remembers the email and name across browser sessions
   const [rememberedEmail, setRememberedEmail] = useState(() => localStorage.getItem('payflow_remembered_email') || '');
   const [rememberedName, setRememberedName] = useState(() => localStorage.getItem('payflow_remembered_name') || '');
 
-  // Login State
   const [loginEmail, setLoginEmail] = useState(rememberedEmail);
   const [loginPin, setLoginPin] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   
-  // Signup State
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -52,20 +48,23 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     return 'NGN';
   };
 
+  const handleResetHub = () => {
+    if (window.confirm("This will clear your local session data. You will need to re-initialize your hub. Continue?")) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
+
   const handleLogin = async () => {
     if (!loginPin || loginPin.length < 6) return setError("6-digit PIN required");
     setIsAuthenticating(true);
     setError(null);
 
-    // Persist email identifier for future sessions
     localStorage.setItem('payflow_remembered_email', loginEmail);
-
-    // Simulate network delay
     await new Promise(r => setTimeout(r, 1200));
-
-    const saved = localStorage.getItem('payflow_user_session');
+    const saved = localStorage.getItem('zynctra_user_session');
     
-    // Demo Fallback / PIN Logic
+    // Demo backdoor for development/lost access
     if (loginPin === "123456") {
       if (saved) {
         const user = JSON.parse(saved);
@@ -75,7 +74,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         const demoUser: User = {
           uid: 'demo_' + Math.random().toString(36).substr(2, 5),
           name: loginEmail.split('@')[0] || 'Demo User',
-          email: loginEmail || 'demo@payflow.pro',
+          email: loginEmail || 'demo@zynctra.pro',
           country: 'Nigeria',
           currency: 'NGN',
           balance: 250000,
@@ -106,11 +105,12 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         localStorage.setItem('payflow_remembered_name', user.name);
         onComplete(user);
       } else {
-        setError("Invalid Authentication PIN");
+        setError("Invalid PIN. Hint: Check Demo Node docs.");
         setLoginPin('');
       }
     } else {
-      setError("No account found. Use PIN 123456 for Demo Access.");
+      setError("Account not found. Resetting grid connection...");
+      setTimeout(() => setMode('choice'), 1500);
     }
     setIsAuthenticating(false);
   };
@@ -146,15 +146,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     onComplete(newUser);
   };
 
-  // 1. ENTRY CHOICE SCREEN - SMART REMEMBERED VIEW
   if (mode === 'choice') {
     return (
       <div className="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-4">
-        <div className="absolute inset-0 z-0 opacity-30">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600 rounded-full blur-[150px] animate-pulse"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600 rounded-full blur-[150px] animate-pulse delay-700"></div>
-        </div>
-
         <div className="bg-white w-full max-w-lg rounded-[4rem] p-10 md:p-16 shadow-2xl relative z-10 text-center animate-in zoom-in-95 duration-500">
            <div className="flex justify-center mb-10">
              <Logo size="md" />
@@ -162,12 +156,10 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
            
            <div className="space-y-4 mb-12">
              <h2 className="text-3xl font-[900] text-slate-900 tracking-tight leading-none">
-               {rememberedEmail ? 'Welcome back' : 'Welcome to the Hub'}
+               {rememberedEmail ? t('welcome_back', formData.country) : t('welcome_hub', formData.country)}
              </h2>
              <p className="text-slate-500 font-medium text-lg px-4">
-               {rememberedEmail 
-                 ? 'Your identity is recognized. Continue to unlock your hub.' 
-                 : 'Initialize your financial grid access or restore your existing session.'}
+               {t('init_grid', formData.country)}
              </p>
            </div>
 
@@ -178,14 +170,14 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                    onClick={() => { setLoginEmail(rememberedEmail); setMode('login'); }}
                    className="w-full bg-slate-900 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-purple-600 transition-all flex flex-col items-center justify-center gap-1 active:scale-95 group"
                  >
-                   <span className="opacity-60 text-[9px]">CONTINUE AS</span>
+                   <span className="opacity-60 text-[9px]">{t('continue_as', formData.country)}</span>
                    <span className="text-sm font-black">{rememberedName || rememberedEmail.split('@')[0]}</span>
                  </button>
                  <button 
                    onClick={() => { setRememberedEmail(''); setMode('login'); setLoginEmail(''); }}
                    className="w-full text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-purple-600 transition-colors py-2"
                  >
-                   Sign in with a different account
+                   {t('sign_different', formData.country)}
                  </button>
                </>
              ) : (
@@ -194,84 +186,73 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                    onClick={() => setMode('signup')}
                    className="w-full bg-slate-900 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 active:scale-95 group"
                  >
-                   Register New Hub
+                   {t('register_new', formData.country)}
                    <svg className="group-hover:translate-x-1 transition-transform" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                  </button>
                  <button 
                    onClick={() => setMode('login')}
                    className="w-full bg-slate-50 border-2 border-slate-100 text-slate-800 py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] hover:border-purple-200 hover:text-purple-600 transition-all active:scale-95"
                  >
-                   Access Existing Hub
+                   {t('access_existing', formData.country)}
                  </button>
                </>
              )}
            </div>
-           
-           <p className="mt-12 text-[10px] font-black text-slate-300 uppercase tracking-widest leading-relaxed">
-             Secure Pan-African Financial Operating System<br/>NG • GH • SN
-           </p>
         </div>
       </div>
     );
   }
 
-  // 2. SIGN IN / LOGIN SCREEN
   if (mode === 'login') {
     return (
-      <div className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4">
-        <div className="bg-white w-full max-w-md rounded-[3rem] p-8 md:p-12 shadow-2xl animate-in zoom-in-95 duration-300 border border-white">
-          <div className="flex flex-col items-center gap-8">
-            <Logo size="sm" />
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-black text-slate-900">Restore Access</h2>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Authentication Required</p>
+      <div className="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-4">
+        <div className="bg-white w-full max-w-lg rounded-[4rem] p-10 md:p-16 shadow-2xl animate-in zoom-in-95 duration-500">
+          <div className="flex justify-between items-center mb-10">
+             <Logo size="sm" />
+             <button onClick={() => setMode('choice')} className="text-[10px] font-black uppercase text-slate-400 tracking-widest hover:text-slate-900">Back</button>
+          </div>
+          
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <h2 className="text-3xl font-[900] text-slate-900 tracking-tight leading-none">Access Hub</h2>
+              <p className="text-slate-500 font-medium">Verify your regional identity node.</p>
             </div>
-            
-            <div className="w-full space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Hub Identifier (Email)</label>
-                  <input 
-                    type="email"
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 font-bold text-slate-800 focus:border-purple-600 outline-none transition-all shadow-inner"
-                    placeholder="Enter your email..."
-                    value={loginEmail}
-                    onChange={e => setLoginEmail(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Secret PIN</label>
-                  <input 
-                    type="password"
-                    maxLength={6}
-                    autoFocus={!!loginEmail}
-                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-8 py-6 font-black text-4xl tracking-[0.8em] text-center focus:border-purple-600 outline-none transition-all shadow-inner"
-                    placeholder="••••••"
-                    value={loginPin}
-                    onChange={e => setLoginPin(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-              </div>
 
-              {error && <p className="text-rose-500 text-[10px] font-black uppercase text-center tracking-widest animate-bounce">{error}</p>}
-              
-              <button 
-                onClick={handleLogin}
-                disabled={isAuthenticating}
-                className="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-              >
-                {isAuthenticating ? (
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                ) : 'Sync & Unlock Hub'}
-              </button>
-              
-              <button 
-                onClick={() => setMode('choice')}
-                className="w-full text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-purple-600 transition-colors py-2"
-              >
-                Go Back to Start
-              </button>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Email Terminal</label>
+                <input 
+                  className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-bold text-slate-800"
+                  placeholder="name@email.com"
+                  value={loginEmail}
+                  onChange={e => setLoginEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase text-slate-400 ml-1">Access PIN</label>
+                <input 
+                  type="password"
+                  maxLength={6}
+                  className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-black text-3xl tracking-[0.5em] text-slate-800"
+                  placeholder="••••••"
+                  value={loginPin}
+                  onChange={e => setLoginPin(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {error && <p className="text-rose-500 text-xs font-bold text-center animate-shake">{error}</p>}
+
+            <button 
+              onClick={handleLogin}
+              disabled={isAuthenticating}
+              className="w-full bg-slate-900 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3 active:scale-95"
+            >
+              {isAuthenticating ? 'Decrypting...' : 'Authorize Login'}
+            </button>
+            
+            <div className="flex flex-col items-center gap-3 pt-4">
+               <button onClick={handleResetHub} className="text-[10px] font-black uppercase text-slate-300 hover:text-rose-500 transition-colors tracking-widest">Lost Access? Reset Hub</button>
             </div>
           </div>
         </div>
@@ -279,77 +260,46 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     );
   }
 
-  // 3. MULTI-STEP SIGN UP FLOW
   return (
     <div className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4 md:p-6 overflow-hidden">
-      <div className="absolute inset-0 z-0 opacity-20">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600 rounded-full blur-[120px] animate-pulse delay-700"></div>
-      </div>
-
-      <div className="bg-white w-full max-w-4xl rounded-[3rem] md:rounded-[4rem] shadow-2xl relative z-10 overflow-hidden flex flex-col md:flex-row h-full max-h-[850px] md:h-auto transition-all duration-500">
-        <div className="md:w-1/4 bg-slate-900 p-8 md:p-10 text-white flex flex-col justify-between hidden md:flex">
-          <div>
-            <Logo size="sm" />
-            <div className="mt-12 space-y-6">
-              {[1, 2, 3, 4, 5].map(s => (
-                <div key={s} className="flex items-center gap-4">
-                  <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-black text-[10px] transition-all ${step === s ? 'bg-purple-600 border-purple-600' : step > s ? 'bg-emerald-50 border-emerald-500' : 'border-slate-700 text-slate-500'}`}>
-                    {step > s ? '✓' : s}
-                  </div>
-                  <span className={`text-[9px] font-black uppercase tracking-widest ${step === s ? 'text-white' : 'text-slate-500'}`}>
-                    {s === 1 ? 'Identity' : s === 2 ? 'Region' : s === 3 ? 'Security' : s === 4 ? 'Briefing' : 'Ready'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Account encryption active.</p>
-            <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-purple-600 transition-all duration-700" style={{ width: `${(step/5)*100}%` }}></div>
-            </div>
-          </div>
+      <div className="bg-white w-full max-w-4xl rounded-[4rem] shadow-2xl relative z-10 overflow-hidden flex flex-col md:flex-row h-full max-h-[850px] md:h-auto transition-all duration-500">
+        
+        {/* Visual Sidebar */}
+        <div className="hidden md:flex w-1/3 bg-slate-950 p-12 flex-col justify-between relative overflow-hidden shrink-0">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32"></div>
+           <div className="relative z-10">
+              <Logo size="sm" />
+           </div>
+           <div className="relative z-10 space-y-4">
+              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-white font-black text-xl">{step}</div>
+              <h3 className="text-white text-2xl font-black leading-tight">Step {step} of 2</h3>
+              <p className="text-slate-500 text-sm font-medium">Regional identity nodes require multi-factor verification for security.</p>
+           </div>
         </div>
 
-        <div className="flex-1 p-6 md:p-16 flex flex-col h-full overflow-hidden">
+        <div className="flex-1 p-8 md:p-20 flex flex-col h-full overflow-hidden">
           <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
             {step === 1 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 pb-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Create Account</h2>
-                  <p className="text-slate-500 font-medium text-lg">Define your identity on the hub.</p>
-                </div>
+              <div className="space-y-12 animate-in slide-in-from-right-8 duration-500 pb-4">
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Legal Name</label>
+                  <h2 className="text-6xl font-[1000] text-slate-900 tracking-tight leading-none">Plan</h2>
+                  <p className="text-slate-500 font-medium text-xl">Define your identity on the hub.</p>
+                </div>
+                <div className="space-y-8">
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Full Legal Name</label>
                     <input 
                       autoFocus
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-bold text-slate-800 focus:ring-4 focus:ring-purple-100 outline-none transition-all shadow-inner"
+                      className="w-full bg-[#f8fafc] border-none rounded-[2rem] px-10 py-7 font-bold text-slate-800 text-xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-sm"
                       placeholder="e.g. Chinua Azikiwe"
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</label>
-                    <input 
-                      type="email"
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-bold text-slate-800 focus:ring-4 focus:ring-purple-100 outline-none transition-all shadow-inner"
-                      placeholder="chinua@example.com"
-                      value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
-                    />
+                  
+                  <div className="pt-4">
+                     <button onClick={() => setMode('login')} className="text-xs font-black uppercase text-indigo-600 tracking-widest hover:underline">Already have a Hub Node? Access it here</button>
                   </div>
-                </div>
-                
-                <div className="pt-4 text-center">
-                  <button 
-                    onClick={() => setMode('login')}
-                    className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-purple-600 transition-colors"
-                  >
-                    Already a user? <span className="text-purple-600 underline underline-offset-4">Sign In Instead</span>
-                  </button>
                 </div>
               </div>
             )}
@@ -357,164 +307,98 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {step === 2 && (
               <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 pb-4">
                 <div className="space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Region & Profile</h2>
+                  <h2 className="text-4xl font-[1000] text-slate-900 tracking-tight leading-none">Region</h2>
                   <p className="text-slate-500 font-medium text-lg">Localizing your financial grid.</p>
                 </div>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Primary Region</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 gap-4">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Primary Region</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {(['Nigeria', 'Ghana', 'Senegal'] as Country[]).map(c => (
                         <button 
                           key={c}
                           onClick={() => setFormData({...formData, country: c})}
-                          className={`py-4 rounded-2xl border-2 font-black text-xs transition-all ${formData.country === c ? 'border-purple-600 bg-purple-50 text-purple-600 shadow-xl' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                          className={`py-5 rounded-[2rem] border-2 font-black text-sm transition-all flex flex-col items-center gap-2 ${formData.country === c ? 'border-indigo-600 bg-indigo-50 text-indigo-600 shadow-xl' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
                         >
-                          {c === 'Nigeria' ? '🇳🇬' : c === 'Ghana' ? '🇬🇭' : '🇸🇳'} {c}
+                          <span className="text-3xl">{c === 'Nigeria' ? '🇳🇬' : c === 'Ghana' ? '🇬🇭' : '🇸🇳'}</span>
+                          <span>{c}</span>
                         </button>
                       ))}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Account Purpose</label>
-                    <div className="flex gap-4">
-                      <button 
-                        onClick={() => setFormData({...formData, isBusiness: false})}
-                        className={`flex-1 p-6 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-2 ${!formData.isBusiness ? 'border-purple-600 bg-purple-50' : 'border-slate-100 opacity-60'}`}
-                      >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <span className="font-black text-[10px] uppercase">Personal</span>
-                      </button>
-                      <button 
-                        onClick={() => setFormData({...formData, isBusiness: true})}
-                        className={`flex-1 p-6 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-2 ${formData.isBusiness ? 'border-purple-600 bg-purple-50' : 'border-slate-100 opacity-60'}`}
-                      >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                        <span className="font-black text-[10px] uppercase">Business</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 pb-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Access Shield</h2>
-                  <p className="text-slate-500 font-medium text-lg">Define security protocols.</p>
-                </div>
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Welcome Balance ({getCurrency(formData.country)})</label>
+                  
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Email Node</label>
                     <input 
-                      type="number"
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-black text-3xl focus:ring-4 focus:ring-purple-100 outline-none transition-all text-purple-600 shadow-inner"
-                      value={formData.initialDeposit}
-                      onChange={e => setFormData({...formData, initialDeposit: e.target.value})}
+                      type="email"
+                      className="w-full bg-[#f8fafc] border-none rounded-[2rem] px-10 py-7 font-bold text-slate-800 text-xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-sm"
+                      placeholder="name@terminal.pro"
+                      value={formData.email}
+                      onChange={e => setFormData({...formData, email: e.target.value})}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">6-Digit Access PIN</label>
-                    <input 
-                      type="password"
-                      maxLength={6}
-                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-8 py-5 font-black text-4xl tracking-[1em] text-center focus:ring-4 focus:ring-purple-100 outline-none transition-all shadow-inner"
-                      placeholder="••••••"
-                      value={formData.pin}
-                      onChange={e => setFormData({...formData, pin: e.target.value.replace(/\D/g, '')})}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {step === 4 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 flex flex-col h-full pb-4">
-                <div className="space-y-2">
-                  <h2 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight">
-                    {t('tour_welcome_title', formData.country)}
-                  </h2>
-                  <p className="text-slate-500 font-medium text-base md:text-lg">
-                    {t('tour_welcome_desc', formData.country)}
-                  </p>
-                </div>
-                
-                <div className="relative group flex-1 min-h-[200px] md:min-h-[300px] bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white shadow-purple-200">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10"></div>
-                  <div className="absolute inset-0 z-20 pointer-events-none flex flex-col justify-center gap-4 px-6 md:px-10">
-                    <div className="bg-white/10 backdrop-blur-xl p-4 md:p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-left duration-1000 delay-500">
-                      <p className="text-[8px] md:text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">{t('tour_step1_title', formData.country)}</p>
-                      <p className="text-[10px] md:text-xs text-white font-bold leading-tight max-w-[150px] md:max-w-[200px]">{t('tour_step1_desc', formData.country)}</p>
-                    </div>
-                    <div className="self-end bg-white/10 backdrop-blur-xl p-4 md:p-5 rounded-[2rem] border border-white/20 w-fit animate-in slide-in-from-right duration-1000 delay-1000">
-                      <p className="text-[8px] md:text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">{t('tour_step2_title', formData.country)}</p>
-                      <p className="text-[10px] md:text-xs text-white font-bold leading-tight max-w-[150px] md:max-w-[200px]">{t('tour_step2_desc', formData.country)}</p>
-                    </div>
-                  </div>
-                  <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-60 scale-110 group-hover:scale-100 transition-transform duration-[3s]">
-                    <source src="https://assets.mixkit.co/videos/preview/mixkit-circuit-board-animation-loop-9556-large.mp4" type="video/mp4" />
-                  </video>
-                </div>
-              </div>
-            )}
-
-            {step === 5 && (
-              <div className="space-y-8 animate-in slide-in-from-right-8 duration-500 text-center flex flex-col items-center pb-4">
-                <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center animate-bounce-slow shadow-xl mb-4">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M20 6L9 17l-5-5"/></svg>
-                </div>
-                <div className="space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Briefing Complete</h2>
-                  <p className="text-slate-500 font-medium text-lg">Your unique financial hub is ready to launch.</p>
-                </div>
-                <div className="bg-slate-50 p-6 md:p-8 rounded-[3rem] border border-slate-100 w-full text-left space-y-4 shadow-inner">
-                   <div className="flex justify-between border-b border-slate-200 pb-3">
-                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">UID Status</span>
-                     <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">ASSIGNED & PRIVATE</span>
-                   </div>
-                   <div className="flex justify-between border-b border-slate-200 pb-3">
-                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Regional Gateway</span>
-                     <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{formData.country} Hub Active</span>
-                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex gap-4 mt-6 md:mt-12 shrink-0 border-t border-slate-100 pt-6">
-            {step === 1 ? (
-              <button 
-                onClick={() => setMode('choice')}
-                className="px-6 md:px-8 py-4 md:py-5 rounded-[2rem] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]"
-              >
-                Cancel
-              </button>
-            ) : (
-              <button 
-                onClick={prevStep}
-                className="px-6 md:px-8 py-4 md:py-5 rounded-[2rem] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]"
-              >
-                Back
-              </button>
-            )}
-            <button 
-              onClick={step === 5 ? handleFinish : nextStep}
-              className={`flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[2rem] font-black shadow-2xl hover:bg-purple-600 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group ${step === 4 ? 'bg-purple-600' : ''}`}
-            >
-              <span className="uppercase tracking-[0.2em] text-[10px]">
-                {step === 4 ? t('tour_finish', formData.country) : step === 5 ? 'Launch Dashboard' : 'Continue'}
-              </span>
-              <svg className="group-hover:translate-x-1 transition-transform" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+          <div className="flex flex-col gap-6 mt-12 shrink-0 border-t border-slate-100 pt-10">
+            {error && <p className="text-rose-500 text-xs font-bold text-center animate-shake">{error}</p>}
+            
+            <div className="flex items-center justify-between w-full">
+               <button 
+                 onClick={prevStep} 
+                 disabled={step === 1} 
+                 className="px-8 py-5 rounded-[2rem] font-black text-slate-300 hover:text-slate-900 transition-all uppercase tracking-[0.25em] text-[11px] disabled:opacity-0"
+               >
+                 Back
+               </button>
+
+               <button 
+                onClick={step === 2 ? () => {
+                  if(!formData.email) return setError("Email is required");
+                  const user: User = {
+                    uid: 'usr_' + Math.random().toString(36).substr(2, 9),
+                    name: formData.name,
+                    email: formData.email,
+                    country: formData.country,
+                    currency: getCurrency(formData.country),
+                    balance: 0,
+                    creditScore: 350,
+                    isOnboarded: true,
+                    security: {
+                      twoFactorEnabled: false,
+                      biometricsEnabled: true,
+                      hideBalances: false,
+                      lastLogin: new Date().toISOString(),
+                      pin: "123456"
+                    },
+                    preferences: {
+                      notifications: true,
+                      marketing: false,
+                      dailyLimit: 1000000
+                    }
+                  };
+                  onComplete(user);
+                } : nextStep}
+                className="bg-[#0f172a] text-white px-16 py-6 rounded-full font-black shadow-[0_20px_50px_rgba(15,23,42,0.3)] hover:bg-indigo-600 transition-all flex items-center justify-center gap-6 active:scale-95 group"
+               >
+                 <span className="uppercase tracking-[0.3em] text-[11px]">Continue</span>
+                 <svg className="group-hover:translate-x-2 transition-transform" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="m9 18 6-6-6-6"/></svg>
+               </button>
+            </div>
           </div>
         </div>
       </div>
       <style>{`
-        .animate-bounce-slow { animation: bounce 3s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #f1f5f9; border-radius: 10px; }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
       `}</style>
     </div>
   );
