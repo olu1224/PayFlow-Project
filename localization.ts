@@ -61,8 +61,8 @@ export const translations: Record<string, Record<'en' | 'fr', string>> = {
   nearby_action: { en: 'Find Agents', fr: 'Chercher' },
 
   // Sections
-  universal_grid: { en: 'Universal Grid', fr: 'Grille Universelle' },
-  mpn_subtitle: { en: 'Mobile • Power • Network', fr: 'Mobile • Énergie • Réseau' },
+  daily_services: { en: 'Daily Services', fr: 'Services Quotidiens' },
+  mpn_subtitle: { en: 'Bills • Travel • Shopping', fr: 'Factures • Voyage • Achats' },
   recent_activity: { en: 'Recent Activity', fr: 'Activité Récente' },
   audit_history: { en: 'Audit History', fr: 'Historique' },
 

@@ -74,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
             </div>
             <div className="flex-1 text-center xl:text-left space-y-2">
               <h3 className="text-2xl font-[1000] text-indigo-950 tracking-tight leading-none">Beta Tester's Launchpad</h3>
-              <p className="text-sm font-bold text-indigo-600/70 max-w-2xl">Initialize these critical missions to verify the Pan-African financial grid performance:</p>
+              <p className="text-sm font-bold text-indigo-600/70 max-w-2xl">Complete these missions to test our new simplified Daily Services hub:</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 w-full xl:w-auto">
               <button onClick={() => setSelectedService('Electricity')} className="px-4 py-3 bg-white rounded-xl font-black text-[9px] uppercase tracking-widest text-indigo-600 border border-indigo-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">1. Power Bill</button>
@@ -166,12 +166,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, transactions, onNewTransact
          </button>
       </section>
 
-      {/* 3. GRID OF SERVICES */}
+      {/* 3. DAILY SERVICES GRID */}
       <section className="space-y-4 md:space-y-8 pt-2">
-        <div className="flex items-center justify-between px-2 md:px-0">
-          <h2 className="text-xl md:text-2xl font-[1000] text-slate-900 tracking-tight">{t('universal_grid', user.country)}</h2>
-          <button onClick={() => setIsGridExpanded(!isGridExpanded)} className="text-[9px] md:text-xs font-black text-indigo-600 uppercase tracking-widest hover:underline transition-all">
-            {isGridExpanded ? 'Collapse Grid' : 'Expand All'}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 px-2 md:px-0">
+          <div>
+            <h2 className="text-xl md:text-2xl font-[1000] text-slate-900 tracking-tight">{t('daily_services', user.country)}</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{t('mpn_subtitle', user.country)}</p>
+          </div>
+          <button onClick={() => setIsGridExpanded(!isGridExpanded)} className="text-[9px] md:text-xs font-black text-indigo-600 uppercase tracking-widest hover:underline transition-all self-start">
+            {isGridExpanded ? 'Collapse All' : 'Show All Services'}
           </button>
         </div>
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
