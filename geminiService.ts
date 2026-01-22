@@ -173,7 +173,8 @@ export const connectLiveAssistant = (callbacks: any, country: any) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const lang = getLanguage(country);
   return ai.live.connect({
-    model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+    /* Update: Changed model to gemini-2.5-flash-native-audio-preview-12-2025 as per current guidelines */
+    model: 'gemini-2.5-flash-native-audio-preview-12-2025',
     callbacks,
     config: {
       responseModalities: [Modality.AUDIO],

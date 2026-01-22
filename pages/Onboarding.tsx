@@ -41,11 +41,27 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     return 'NGN';
   };
 
-  const handleLogin = async () => {
-    if (!loginPin || loginPin.length < 6) return setError("6-digit PIN required");
+  const handleLogin = async (demo: boolean = false) => {
+    if (!demo && (!loginPin || loginPin.length < 6)) return setError("6-digit PIN required");
     setIsAuthenticating(true);
     await new Promise(r => setTimeout(r, 1000));
     
+    if (demo) {
+      onComplete({
+        uid: 'demo_node_alpha',
+        name: 'Alpha Tester',
+        email: 'tester@zynctra.pro',
+        country: 'Nigeria',
+        currency: 'NGN',
+        balance: 125000,
+        creditScore: 680,
+        isOnboarded: true,
+        security: { twoFactorEnabled: false, biometricsEnabled: true, hideBalances: false, lastLogin: new Date().toISOString(), pin: "123456" },
+        preferences: { notifications: true, marketing: false, dailyLimit: 1000000 }
+      });
+      return;
+    }
+
     const saved = localStorage.getItem('zynctra_user_session');
     if (saved) {
       const user = JSON.parse(saved);
@@ -55,7 +71,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         setError("Invalid Access PIN");
       }
     } else if (loginPin === "123456") {
-        // Demo Fallback
         onComplete({
             uid: 'demo_123',
             name: loginEmail.split('@')[0] || 'Demo User',
@@ -112,7 +127,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           <div className="space-y-8">
             <div className="space-y-2">
               <h2 className="text-3xl font-[1000] text-slate-900 tracking-tight leading-none">Access Hub</h2>
-              <p className="text-slate-500 font-medium">Authenticate your regional identity.</p>
+              <p className="text-slate-500 font-medium italic opacity-70">Testers: Use PIN 123456</p>
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -125,9 +140,14 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               </div>
             </div>
             {error && <p className="text-rose-500 text-xs font-bold text-center">{error}</p>}
-            <button onClick={handleLogin} disabled={isAuthenticating} className="w-full bg-slate-950 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-indigo-600 transition-all active:scale-95">
-              {isAuthenticating ? 'Decrypting...' : 'Authorize Access'}
-            </button>
+            <div className="space-y-3">
+              <button onClick={() => handleLogin()} disabled={isAuthenticating} className="w-full bg-slate-950 text-white py-6 rounded-[2.2rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-indigo-600 transition-all active:scale-95">
+                {isAuthenticating ? 'Decrypting...' : 'Authorize Access'}
+              </button>
+              <button onClick={() => handleLogin(true)} className="w-full bg-indigo-50 text-indigo-600 py-4 rounded-[2rem] font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all">
+                Quick Test: Use Demo Node
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -138,7 +158,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     <div className="fixed inset-0 z-[200] bg-[#0f172a] flex items-center justify-center p-4 md:p-6 overflow-hidden">
       <div className="bg-white w-full max-w-5xl rounded-[4rem] shadow-2xl relative z-10 overflow-hidden flex flex-col md:flex-row h-full max-h-[800px] md:h-auto transition-all duration-500 border border-white/10">
         
-        {/* Dark Sidebar - Aligned to screenshot */}
         <div className="hidden md:flex w-[35%] bg-[#050510] p-12 flex-col justify-between relative overflow-hidden shrink-0">
            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full blur-[100px] opacity-10 -mr-32 -mt-32"></div>
            <div className="relative z-10">
@@ -158,7 +177,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
            </div>
         </div>
 
-        {/* Main Content Area */}
         <div className="flex-1 p-8 md:p-24 flex flex-col h-full overflow-hidden bg-white">
           <div className="flex-1 overflow-y-auto pr-1">
             {step === 1 && (
@@ -180,8 +198,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     />
                   </div>
                   
-                  <div className="pt-2 border-t border-slate-50">
-                    <button onClick={() => setMode('login')} className="text-xs font-black uppercase text-indigo-600 tracking-widest hover:underline">Already have a Node? Access here</button>
+                  <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
+                    <button onClick={() => setMode('login')} className="text-xs font-black uppercase text-indigo-600 tracking-widest hover:underline">Already have a Node?</button>
+                    <button onClick={() => handleLogin(true)} className="text-[10px] font-black uppercase text-emerald-600 tracking-widest hover:underline">Tester's Fast Access</button>
                   </div>
                 </div>
               </div>
@@ -223,7 +242,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             )}
           </div>
 
-          {/* Footer Navigation - Pill style matching screenshot */}
           <div className="flex flex-col gap-6 mt-12 pt-10 border-t border-slate-50 shrink-0">
              {error && <p className="text-rose-500 text-xs font-black uppercase tracking-widest text-center animate-pulse">{error}</p>}
              <div className="flex items-center justify-between">
